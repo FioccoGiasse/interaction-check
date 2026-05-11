@@ -74,6 +74,13 @@ export default function Home() {
   const [rcpSourcesChecked, setRcpSourcesChecked] = useState<any[]>([]);
   const [acceptedFoodInteractionIds, setAcceptedFoodInteractionIds] = useState<any[]>([]);
   const [excludedFoodInteractionIds, setExcludedFoodInteractionIds] = useState<any[]>([]);
+
+  const [drugInteractionStatus, setDrugInteractionStatus] = useState("");
+  const [drugInteractionLoading, setDrugInteractionLoading] = useState(false);
+  const [drugInteractions, setDrugInteractions] = useState<any[]>([]);
+  const [drugRcpSourcesChecked, setDrugRcpSourcesChecked] = useState<any[]>([]);
+  const [acceptedDrugInteractionIds, setAcceptedDrugInteractionIds] = useState<any[]>([]);
+  const [excludedDrugInteractionIds, setExcludedDrugInteractionIds] = useState<any[]>([]);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -209,6 +216,40 @@ export default function Home() {
       setFoodInteractionLoading(false);
     }
   }
+
+  const checkSuggestedDrugInteractions = async () => {
+    setDrugInteractionLoading(true);
+    setDrugInteractionStatus("");
+
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/interactions/drugs/suggested`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          selected_drugs: selectedDrugs,
+          selected_sources: selectedSources
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante la verifica delle interazioni con altri farmaci.");
+      }
+
+      const data = await response.json();
+
+      setDrugInteractions(data.interactions || []);
+      setDrugRcpSourcesChecked(data.rcp_sources_checked || []);
+      setAcceptedDrugInteractionIds([]);
+      setExcludedDrugInteractionIds([]);
+      setDrugInteractionStatus(data.message || "Verifica completata.");
+    } catch (error) {
+      setDrugInteractionStatus("Errore durante la verifica delle interazioni con altri farmaci.");
+    } finally {
+      setDrugInteractionLoading(false);
+    }
+  };
 
   return (
     <main className="container">
@@ -568,6 +609,185 @@ export default function Home() {
               ))}
             </div>
           )}
+
+          <div className="section-card">
+            <h2>Interazioni con altri farmaci</h2>
+
+            <p>
+              Il sistema legge la sezione 4.5 del RCP AIFA e mostra i candidati documentali relativi a interazioni con altri medicinali o classi di medicinali.
+            </p>
+
+            {selectedDrugs.length === 0 && (
+              <div className="warning-box">
+                Seleziona almeno un farmaco per cercare interazioni con altri farmaci.
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="primary-button"
+              onClick={checkSuggestedDrugInteractions}
+              disabled={selectedDrugs.length === 0 || drugInteractionLoading}
+            >
+              {drugInteractionLoading ? "Verifica in corso..." : "Cerca interazioni con altri farmaci"}
+            </button>
+
+            {drugInteractionStatus && (
+              <div className="notice">
+                {drugInteractionStatus}
+              </div>
+            )}
+
+            {drugRcpSourcesChecked.length > 0 && (
+              <div className="selected-box">
+                <h3>Fonti RCP/FI controllate per interazioni farmaco farmaco</h3>
+
+                {drugRcpSourcesChecked.map((source, index) => (
+                  <div key={index} className="source-check-card">
+                    <strong>{source.commercial_name || "Farmaco selezionato"}</strong>
+
+                    <p>
+                      Principio attivo: {source.active_ingredient || "non disponibile"}
+                    </p>
+
+                    <p>
+                      AIC: {source.aic_code || "non disponibile"}
+                    </p>
+
+                    <div className="badges">
+                      <span className="badge blue">
+                        {source.source_name}
+                      </span>
+
+                      <span className={source.status === "source_available" ? "badge green" : "badge red"}>
+                        {source.status === "source_available" ? "Fonte disponibile" : "Fonte non disponibile"}
+                      </span>
+
+                      {source.extraction_status && (
+                        <span className="badge">
+                          Estrazione: {source.extraction_status}
+                        </span>
+                      )}
+
+                      {typeof source.candidate_count === "number" && (
+                        <span className="badge green">
+                          Candidati: {source.candidate_count}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="source-links">
+                      {source.rcp_url && (
+                        <a href={source.rcp_url} target="_blank" rel="noreferrer">
+                          Apri RCP
+                        </a>
+                      )}
+
+                      {source.leaflet_url && (
+                        <a href={source.leaflet_url} target="_blank" rel="noreferrer">
+                          Apri Foglio illustrativo
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {drugInteractions.length > 0 && (
+              <div className="selected-box">
+                <h3>Interazioni con altri farmaci trovate</h3>
+
+                {drugInteractions.map((interaction) => (
+                  <div key={interaction.id} className="drug-interaction-card">
+                    <strong>
+                      {interaction.active_ingredient} + {interaction.interacting_drug_or_class}
+                    </strong>
+
+                    <p>{interaction.interaction_summary}</p>
+
+                    <div className="badges">
+                      <span className="badge blue">
+                        Fonte: {interaction.source_name}
+                      </span>
+
+                      {interaction.source_section && (
+                        <span className="badge">
+                          Sezione: {interaction.source_section}
+                        </span>
+                      )}
+
+                      {interaction.recognition_status && (
+                        <span className="badge">
+                          {interaction.recognition_status}
+                        </span>
+                      )}
+
+                      {interaction.validation_status && (
+                        <span className="badge green">
+                          {interaction.validation_status}
+                        </span>
+                      )}
+                    </div>
+
+                    {interaction.recommendation && (
+                      <p>
+                        <strong>Raccomandazione:</strong> {interaction.recommendation}
+                      </p>
+                    )}
+
+                    <div className="review-actions">
+                      <button
+                        type="button"
+                        className={acceptedDrugInteractionIds.includes(interaction.id) ? "secondary-button active" : "secondary-button"}
+                        onClick={() => {
+                          setAcceptedDrugInteractionIds((current) =>
+                            current.includes(interaction.id)
+                              ? current
+                              : [...current, interaction.id]
+                          );
+
+                          setExcludedDrugInteractionIds((current) =>
+                            current.filter((id) => id !== interaction.id)
+                          );
+                        }}
+                      >
+                        Accetta nel report
+                      </button>
+
+                      <button
+                        type="button"
+                        className={excludedDrugInteractionIds.includes(interaction.id) ? "danger-button active" : "danger-button"}
+                        onClick={() => {
+                          setExcludedDrugInteractionIds((current) =>
+                            current.includes(interaction.id)
+                              ? current
+                              : [...current, interaction.id]
+                          );
+
+                          setAcceptedDrugInteractionIds((current) =>
+                            current.filter((id) => id !== interaction.id)
+                          );
+                        }}
+                      >
+                        Escludi dal report
+                      </button>
+                    </div>
+
+                    <p className="review-status">
+                      Stato revisione: {
+                        acceptedDrugInteractionIds.includes(interaction.id)
+                          ? "accettata nel report"
+                          : excludedDrugInteractionIds.includes(interaction.id)
+                            ? "esclusa dal report"
+                            : "da valutare"
+                      }
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {foodInteractions.filter((interaction) => acceptedFoodInteractionIds.includes(interaction.id)).length > 0 && (
             <div className="selected-box report-summary-box">
