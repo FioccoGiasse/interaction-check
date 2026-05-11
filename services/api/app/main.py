@@ -6,6 +6,9 @@ from pathlib import Path
 import sqlite3
 import unicodedata
 import re
+import tempfile
+import urllib.request
+from pypdf import PdfReader
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DB_PATH = BASE_DIR / "data" / "enia.db"
@@ -37,6 +40,147 @@ def normalize_text(value):
     value = re.sub(r"[^a-z0-9]+", " ", value)
     value = re.sub(r"\s+", " ", value).strip()
     return value
+
+
+FOOD_AND_SUPPLEMENT_TERMS = [
+    "alcol",
+    "alcool",
+    "bevande alcoliche",
+    "cibo",
+    "alimenti",
+    "alimentazione",
+    "pasto",
+    "pasti",
+    "succo di pompelmo",
+    "pompelmo",
+    "latte",
+    "calcio",
+    "integratori",
+    "integratore",
+    "iperico",
+    "erba di san giovanni",
+    "st john",
+    "liquirizia",
+    "caffeina",
+    "caffè",
+    "te",
+    "tè",
+    "soia",
+    "vitamina k",
+    "vitamina d",
+    "vitamina a",
+    "potassio",
+    "magnesio",
+    "ferro",
+    "zinco",
+    "cranberry",
+    "mirtillo rosso",
+    "ginkgo",
+    "ginseng",
+    "echinacea",
+    "curcuma",
+    "aglio",
+    "omega 3",
+    "olio di pesce"
+]
+
+
+def clean_document_text(value: str) -> str:
+    value = value.replace("\xa0", " ")
+    value = re.sub(r"[ \t]+", " ", value)
+    value = re.sub(r"\n{3,}", "\n\n", value)
+    return value.strip()
+
+
+def download_pdf_to_temp(url: str) -> Path:
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    tmp.close()
+
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "ENIA Interaction Check research prototype"
+        },
+    )
+
+    with urllib.request.urlopen(request, timeout=30) as response:
+        content = response.read()
+
+    Path(tmp.name).write_bytes(content)
+    return Path(tmp.name)
+
+
+def extract_pdf_text(pdf_path: Path) -> str:
+    reader = PdfReader(str(pdf_path))
+    pages = []
+
+    for index, page in enumerate(reader.pages, start=1):
+        page_text = page.extract_text() or ""
+        pages.append(f"\n\n--- PAGE {index} ---\n\n{page_text}")
+
+    return clean_document_text("\n".join(pages))
+
+
+def extract_rcp_section_45(text: str) -> str:
+    compact = clean_document_text(text)
+
+    patterns = [
+        r"4\s*[\.\)]\s*5\s+Interazioni.*?(?=4\s*[\.\)]\s*6\s+|5\s*[\.\)]\s*1\s+|$)",
+        r"4\.5\s+Interazioni.*?(?=4\.6\s+|5\.1\s+|$)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, compact, flags=re.IGNORECASE | re.DOTALL)
+        if match:
+            return clean_document_text(match.group(0))
+
+    return ""
+
+
+def split_document_sentences(text: str) -> list[str]:
+    text = clean_document_text(text)
+    parts = re.split(r"(?<=[\.\;\:])\s+(?=[A-ZÀ-Ü0-9])", text)
+    return [part.strip() for part in parts if part.strip()]
+
+
+def find_food_candidates_in_section(section_text: str, source_url: str) -> list[dict]:
+    candidates = []
+    sentences = split_document_sentences(section_text)
+
+    for sentence in sentences:
+        sentence_lower = sentence.lower()
+        matched_terms = []
+
+        for term in FOOD_AND_SUPPLEMENT_TERMS:
+            pattern = r"\b" + re.escape(term.lower()) + r"\b"
+            if re.search(pattern, sentence_lower):
+                matched_terms.append(term)
+
+        if matched_terms:
+            candidates.append({
+                "matched_terms": sorted(set(matched_terms)),
+                "source_name": "AIFA RCP",
+                "source_url": source_url,
+                "source_section": "4.5 Interazioni con altri medicinali ed altre forme di interazione",
+                "validation_status": "candidate_from_document",
+                "candidate_text": sentence
+            })
+
+    return candidates
+
+
+def extract_food_candidates_from_rcp_url(url: str) -> dict:
+    pdf_path = download_pdf_to_temp(url)
+    text = extract_pdf_text(pdf_path)
+    section = extract_rcp_section_45(text)
+    candidates = find_food_candidates_in_section(section, url) if section else []
+
+    return {
+        "source_url": url,
+        "section_found": bool(section),
+        "candidate_count": len(candidates),
+        "candidates": candidates
+    }
 
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
