@@ -57,6 +57,12 @@ export default function Home() {
   const [consentDataUse, setConsentDataUse] = useState(false);
   const [consentReportGeneration, setConsentReportGeneration] = useState(false);
   const [consentCopyReceived, setConsentCopyReceived] = useState(false);
+  const consentComplete =
+    consentInformation &&
+    consentDataUse &&
+    consentReportGeneration &&
+    consentCopyReceived;
+
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -266,6 +272,12 @@ export default function Home() {
                 Il paziente dichiara di ricevere o poter ricevere copia del report informativo.
               </span>
             </label>
+
+            <div className={consentComplete ? "status" : "warning"}>
+              {consentComplete
+                ? "Consenso completo. Il report può essere preparato."
+                : "Consenso non completo. Il report non dovrebbe essere generato."}
+            </div>
           </div>
         </div>
 

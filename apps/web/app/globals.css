@@ -316,3 +316,23 @@ body {
   line-height: 1.45;
   color: #344054;
 }
+
+.warning {
+  background: #fff5dc;
+  border: 1px solid #f2cc74;
+  border-radius: 14px;
+  padding: 16px;
+  color: #8a5a00;
+  font-weight: 700;
+  margin-top: 16px;
+}
+
+.warning {
+  background: #fff5dc;
+  border: 1px solid #f2cc74;
+  border-radius: 14px;
+  padding: 16px;
+  color: #8a5a00;
+  font-weight: 700;
+  margin-top: 16px;
+}
