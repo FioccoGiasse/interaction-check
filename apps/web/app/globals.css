@@ -395,3 +395,35 @@ body {
   color: #344054;
   line-height: 1.45;
 }
+
+.source-check-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #d8e0ea;
+  border-radius: 14px;
+  background: white;
+  margin-top: 12px;
+}
+
+.source-check-card p {
+  margin: 0;
+  color: #344054;
+  line-height: 1.45;
+}
+
+.source-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.source-links a {
+  color: #145ea8;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.source-links a:hover {
+  text-decoration: underline;
+}

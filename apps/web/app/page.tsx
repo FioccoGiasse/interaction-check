@@ -71,6 +71,7 @@ export default function Home() {
   const [foodInteractionStatus, setFoodInteractionStatus] = useState("");
   const [foodInteractionLoading, setFoodInteractionLoading] = useState(false);
   const [foodInteractions, setFoodInteractions] = useState<any[]>([]);
+  const [rcpSourcesChecked, setRcpSourcesChecked] = useState<any[]>([]);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -196,6 +197,7 @@ export default function Home() {
       const data = await response.json();
 
       setFoodInteractions(data.interactions || []);
+      setRcpSourcesChecked(data.rcp_sources_checked || []);
       setFoodInteractionStatus(data.message || "Verifica completata.");
     } catch {
       setFoodInteractionStatus("Errore durante la verifica delle interazioni alimentari.");
@@ -410,6 +412,50 @@ export default function Home() {
           {foodInteractionStatus && (
             <div className="notice">
               {foodInteractionStatus}
+            </div>
+          )}
+
+          {rcpSourcesChecked.length > 0 && (
+            <div className="selected-box">
+              <h3>Fonti RCP/FI controllate</h3>
+
+              {rcpSourcesChecked.map((source, index) => (
+                <div key={index} className="source-check-card">
+                  <strong>{source.commercial_name || "Farmaco selezionato"}</strong>
+
+                  <p>
+                    Principio attivo: {source.active_ingredient || "non disponibile"}
+                  </p>
+
+                  <p>
+                    AIC: {source.aic_code || "non disponibile"}
+                  </p>
+
+                  <div className="badges">
+                    <span className="badge blue">
+                      {source.source_name}
+                    </span>
+
+                    <span className={source.status === "source_available" ? "badge green" : "badge red"}>
+                      {source.status === "source_available" ? "Fonte disponibile" : "Fonte non disponibile"}
+                    </span>
+                  </div>
+
+                  <div className="source-links">
+                    {source.rcp_url && (
+                      <a href={source.rcp_url} target="_blank" rel="noreferrer">
+                        Apri RCP
+                      </a>
+                    )}
+
+                    {source.leaflet_url && (
+                      <a href={source.leaflet_url} target="_blank" rel="noreferrer">
+                        Apri Foglio illustrativo
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 
