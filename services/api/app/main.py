@@ -737,3 +737,86 @@ def suggest_food_interactions(payload: dict):
         "message": message,
         "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni validate provengono dalla Knowledge Base ENIA. I risultati da RCP AIFA sono candidati documentali e richiedono valutazione clinica prima dell'inclusione nel report."
     }
+
+
+@app.post("/api/interactions/drugs/suggested")
+def suggest_drug_interactions(payload: dict):
+    selected_drugs = payload.get("selected_drugs", [])
+    selected_sources = payload.get("selected_sources", [])
+
+    interactions = []
+    rcp_sources_checked = []
+
+    use_aifa_rcp = "aifa_rcp_fi" in selected_sources
+
+    for drug in selected_drugs:
+        rcp_url = drug.get("rcp_url")
+        leaflet_url = drug.get("leaflet_url")
+        active_ingredient = drug.get("active_ingredient")
+
+        source_status = "source_available" if rcp_url or leaflet_url else "source_not_available"
+        extraction_status = "not_requested"
+        candidate_count = 0
+
+        if use_aifa_rcp and rcp_url:
+            try:
+                extraction_result = extract_drug_interaction_candidates_from_rcp_url(
+                    rcp_url,
+                    active_ingredient or ""
+                )
+
+                extraction_status = "section_found" if extraction_result.get("section_found") else "section_not_found"
+                candidate_count = extraction_result.get("candidate_count", 0)
+
+                for index, candidate in enumerate(extraction_result.get("candidates", []), start=1):
+                    matched_terms = candidate.get("matched_terms", [])
+
+                    interactions.append({
+                        "id": f"drug-rcp-{drug.get('aic_code')}-{index}",
+                        "commercial_name": drug.get("commercial_name"),
+                        "aic_code": drug.get("aic_code"),
+                        "active_ingredient": active_ingredient,
+                        "interacting_drug_or_class": ", ".join(matched_terms) if matched_terms else "testo sezione 4.5 da revisionare",
+                        "interaction_summary": candidate.get("candidate_text"),
+                        "source_name": candidate.get("source_name"),
+                        "source_url": candidate.get("source_url"),
+                        "source_section": candidate.get("source_section"),
+                        "validation_status": candidate.get("validation_status"),
+                        "candidate_type": candidate.get("candidate_type"),
+                        "matched_terms": matched_terms,
+                        "recognition_status": candidate.get("recognition_status"),
+                        "sequence_in_section": candidate.get("sequence_in_section"),
+                        "recommendation": "Valutare clinicamente prima di includere nel report finale."
+                    })
+
+            except Exception:
+                extraction_status = "extraction_error"
+
+        rcp_sources_checked.append({
+            "commercial_name": drug.get("commercial_name"),
+            "aic_code": drug.get("aic_code"),
+            "active_ingredient": active_ingredient,
+            "rcp_url": rcp_url,
+            "leaflet_url": leaflet_url,
+            "source_name": "AIFA RCP e Foglio Illustrativo",
+            "status": source_status,
+            "extraction_status": extraction_status,
+            "candidate_count": candidate_count
+        })
+
+    if interactions:
+        message = f"Trovati {len(interactions)} candidati documentali di interazione farmaco farmaco dalla sezione 4.5 RCP."
+    else:
+        message = "Nessun candidato documentale di interazione farmaco farmaco trovato nella sezione 4.5 RCP."
+
+    return {
+        "checked_at": now_rome(),
+        "selected_drug_count": len(selected_drugs),
+        "selected_sources": selected_sources,
+        "interaction_count": len(interactions),
+        "interactions": interactions,
+        "rcp_sources_checked": rcp_sources_checked,
+        "message": message,
+        "clinical_safety_note": "I risultati da RCP AIFA sono candidati documentali. Devono essere valutati dal medico prima dell'inclusione nel report."
+    }
+
