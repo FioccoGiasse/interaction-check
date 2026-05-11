@@ -67,6 +67,7 @@ export default function Home() {
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
   const [drugSearchLoading, setDrugSearchLoading] = useState(false);
+  const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
 
   useEffect(() => {
     async function checkApi() {
@@ -148,6 +149,18 @@ export default function Home() {
     }
   }
 
+  function addDrugToReport(drug: Drug) {
+    setSelectedDrugs((current) => {
+      const alreadySelected = current.some((item) => item.id === drug.id);
+
+      if (alreadySelected) {
+        return current;
+      }
+
+      return [...current, drug];
+    });
+  }
+
   return (
     <main className="container">
       <div className="card">
@@ -174,6 +187,25 @@ export default function Home() {
           <p className="small">
             Qui costruiremo il flusso per paziente, consenso, verifica e report.
           </p>
+
+          <div className="notice">
+            Farmaci selezionati per il report: {selectedDrugs.length}
+          </div>
+
+          {selectedDrugs.length > 0 && (
+            <div className="selected-box">
+              <h3>Farmaci aggiunti al report</h3>
+
+              {selectedDrugs.map((drug) => (
+                <div key={drug.id} className="selected-drug">
+                  <strong>{drug.commercial_name}</strong>
+                  <span>AIC: {drug.aic_code || "Non disponibile"}</span>
+                  <span>Principio attivo: {drug.active_ingredient || "Non disponibile"}</span>
+                  <span>Fonte: {drug.source}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           <label className="field">
             <span>ID paziente o iniziali</span>
@@ -411,6 +443,13 @@ export default function Home() {
                     </a>
                   )}
                 </div>
+
+                <button
+                  className="button secondary"
+                  onClick={() => addDrugToReport(drug)}
+                >
+                  Aggiungi al report
+                </button>
 
                 <p className="small">
                   Dato recuperato da {drug.source}. Import database:{" "}

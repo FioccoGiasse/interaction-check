@@ -336,3 +336,39 @@ body {
   font-weight: 700;
   margin-top: 16px;
 }
+
+.button.secondary {
+  margin-top: 12px;
+  background: #eef2f7;
+  color: #172033;
+  border: 1px solid #cfd8e3;
+}
+
+.button.secondary {
+  margin-top: 12px;
+  background: #eef2f7;
+  color: #172033;
+  border: 1px solid #cfd8e3;
+}
+
+.button.secondary {
+  margin-top: 12px;
+  background: #eef2f7;
+  color: #172033;
+  border: 1px solid #cfd8e3;
+}
+
+.selected-drug {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #d8e0ea;
+  border-radius: 12px;
+  background: white;
+  margin-top: 10px;
+}
+
+.selected-drug span {
+  color: #536070;
+  font-size: 14px;
+}
