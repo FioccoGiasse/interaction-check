@@ -453,12 +453,14 @@ def suggest_food_interactions(payload: dict):
         source_status = "source_available" if rcp_url or leaflet_url else "source_not_available"
         extraction_status = "not_requested"
         candidate_count = 0
+        unclassified_sentence_count = 0
 
         if use_aifa_rcp and rcp_url:
             try:
                 extraction_result = extract_food_candidates_from_rcp_url(rcp_url)
                 extraction_status = "section_found" if extraction_result.get("section_found") else "section_not_found"
                 candidate_count = extraction_result.get("candidate_count", 0)
+                unclassified_sentence_count = extraction_result.get("unclassified_sentence_count", 0)
 
                 for index, candidate in enumerate(extraction_result.get("candidates", []), start=1):
                     matched_terms = candidate.get("matched_terms", [])
@@ -496,7 +498,8 @@ def suggest_food_interactions(payload: dict):
             "source_name": "AIFA RCP e Foglio Illustrativo",
             "status": source_status,
             "extraction_status": extraction_status,
-            "candidate_count": candidate_count
+            "candidate_count": candidate_count,
+            "unclassified_sentence_count": unclassified_sentence_count
         })
 
     if use_enia_kb and database_exists():

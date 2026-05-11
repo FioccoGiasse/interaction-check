@@ -439,6 +439,24 @@ export default function Home() {
                     <span className={source.status === "source_available" ? "badge green" : "badge red"}>
                       {source.status === "source_available" ? "Fonte disponibile" : "Fonte non disponibile"}
                     </span>
+
+                    {source.extraction_status && (
+                      <span className="badge">
+                        Estrazione: {source.extraction_status}
+                      </span>
+                    )}
+
+                    {typeof source.candidate_count === "number" && (
+                      <span className="badge green">
+                        Candidati: {source.candidate_count}
+                      </span>
+                    )}
+
+                    {typeof source.unclassified_sentence_count === "number" && (
+                      <span className="badge">
+                        Da revisionare: {source.unclassified_sentence_count}
+                      </span>
+                    )}
                   </div>
 
                   <div className="source-links">
