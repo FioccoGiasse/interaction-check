@@ -161,6 +161,12 @@ export default function Home() {
     });
   }
 
+  function removeDrugFromReport(drugId: number) {
+    setSelectedDrugs((current) =>
+      current.filter((drug) => drug.id !== drugId)
+    );
+  }
+
   return (
     <main className="container">
       <div className="card">
@@ -202,6 +208,13 @@ export default function Home() {
                   <span>AIC: {drug.aic_code || "Non disponibile"}</span>
                   <span>Principio attivo: {drug.active_ingredient || "Non disponibile"}</span>
                   <span>Fonte: {drug.source}</span>
+
+                  <button
+                    className="button danger"
+                    onClick={() => removeDrugFromReport(drug.id)}
+                  >
+                    Rimuovi dal report
+                  </button>
                 </div>
               ))}
             </div>

@@ -372,3 +372,10 @@ body {
   color: #536070;
   font-size: 14px;
 }
+
+.button.danger {
+  margin-top: 10px;
+  background: #fdecec;
+  color: #9b1c1c;
+  border: 1px solid #f3b6b6;
+}
