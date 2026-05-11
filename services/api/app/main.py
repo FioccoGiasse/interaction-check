@@ -229,3 +229,19 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
         "count": len(results),
         "results": results
     }
+
+@app.post("/api/interactions/food/suggested")
+def suggested_food_interactions(payload: dict):
+    selected_drugs = payload.get("selected_drugs", [])
+    selected_sources = payload.get("selected_sources", [])
+
+    return {
+        "checked_at": now_rome(),
+        "selected_drug_count": len(selected_drugs),
+        "selected_sources": selected_sources,
+        "interaction_count": 0,
+        "interactions": [],
+        "message": "Nessuna interazione alimentare strutturata disponibile nelle fonti configurate.",
+        "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni saranno mostrate solo se presenti in una fonte strutturata e tracciabile."
+    }
+
