@@ -50,6 +50,7 @@ export default function Home() {
 
   const [patientIdentifier, setPatientIdentifier] = useState("");
   const [patientYearOfBirth, setPatientYearOfBirth] = useState("");
+  const [clinicianName, setClinicianName] = useState("");
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -179,6 +180,16 @@ export default function Home() {
               value={patientYearOfBirth}
               onChange={(event) => setPatientYearOfBirth(event.target.value)}
               placeholder="Es. 1978"
+            />
+          </label>
+
+          <label className="field">
+            <span>Nome operatore</span>
+            <input
+              className="input"
+              value={clinicianName}
+              onChange={(event) => setClinicianName(event.target.value)}
+              placeholder="Es. Dr.ssa Rossi"
             />
           </label>
         </div>
