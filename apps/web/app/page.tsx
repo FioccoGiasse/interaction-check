@@ -70,6 +70,7 @@ export default function Home() {
   const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
   const [foodInteractionStatus, setFoodInteractionStatus] = useState("");
   const [foodInteractionLoading, setFoodInteractionLoading] = useState(false);
+  const [foodInteractions, setFoodInteractions] = useState<any[]>([]);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -194,6 +195,7 @@ export default function Home() {
 
       const data = await response.json();
 
+      setFoodInteractions(data.interactions || []);
       setFoodInteractionStatus(data.message || "Verifica completata.");
     } catch {
       setFoodInteractionStatus("Errore durante la verifica delle interazioni alimentari.");
@@ -408,6 +410,46 @@ export default function Home() {
           {foodInteractionStatus && (
             <div className="notice">
               {foodInteractionStatus}
+            </div>
+          )}
+
+          {foodInteractions.length > 0 && (
+            <div className="selected-box">
+              <h3>Interazioni alimentari trovate</h3>
+
+              {foodInteractions.map((interaction) => (
+                <div key={interaction.id} className="food-interaction-card">
+                  <strong>
+                    {interaction.active_ingredient} + {interaction.food_or_substance}
+                  </strong>
+
+                  <p>{interaction.interaction_summary}</p>
+
+                  <div className="badges">
+                    <span className="badge blue">
+                      Fonte: {interaction.source_name}
+                    </span>
+
+                    {interaction.source_section && (
+                      <span className="badge">
+                        Sezione: {interaction.source_section}
+                      </span>
+                    )}
+
+                    {interaction.validation_status && (
+                      <span className="badge green">
+                        {interaction.validation_status}
+                      </span>
+                    )}
+                  </div>
+
+                  {interaction.recommendation && (
+                    <p>
+                      <strong>Raccomandazione:</strong> {interaction.recommendation}
+                    </p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 
