@@ -87,6 +87,9 @@ export default function Home() {
   const [drivingSections, setDrivingSections] = useState<any[]>([]);
   const [acceptedDrivingSectionIds, setAcceptedDrivingSectionIds] = useState<any[]>([]);
   const [excludedDrivingSectionIds, setExcludedDrivingSectionIds] = useState<any[]>([]);
+
+  const [reportPayload, setReportPayload] = useState<any | null>(null);
+  const [reportStatus, setReportStatus] = useState("");
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -288,6 +291,48 @@ export default function Home() {
     } finally {
       setDrivingSectionLoading(false);
     }
+  };
+
+  const prepareReportPayload = () => {
+    const acceptedFoodInteractions = foodInteractions.filter((interaction) =>
+      acceptedFoodInteractionIds.includes(interaction.id)
+    );
+
+    const acceptedDrugInteractions = drugInteractions.filter((interaction) =>
+      acceptedDrugInteractionIds.includes(interaction.id)
+    );
+
+    const acceptedDrivingSections = drivingSections.filter((section, index) =>
+      acceptedDrivingSectionIds.includes(section.aic_code || index)
+    );
+
+    const payload = {
+      generated_at: new Date().toISOString(),
+      patient: {
+        identifier: patientIdentifier,
+        year_of_birth: patientYearOfBirth
+      },
+      clinician: {
+        name: clinicianName,
+        role: clinicianRole
+      },
+      consent: {
+        information: consentInformation,
+        data_use: consentDataUse,
+        report_generation: consentReportGeneration,
+        copy_received: consentCopyReceived,
+        complete: consentComplete
+      },
+      clinical_notes: clinicalNotes,
+      selected_sources: selectedSources,
+      selected_drugs: selectedDrugs,
+      accepted_food_interactions: acceptedFoodInteractions,
+      accepted_drug_interactions: acceptedDrugInteractions,
+      accepted_driving_sections: acceptedDrivingSections
+    };
+
+    setReportPayload(payload);
+    setReportStatus("Dati report preparati. Il PDF userà solo gli elementi accettati dal medico.");
   };
 
   return (
