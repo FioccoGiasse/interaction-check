@@ -829,10 +829,10 @@ export default function Home() {
 
           {foodInteractions.filter((interaction) => acceptedFoodInteractionIds.includes(interaction.id)).length > 0 && (
             <div className="selected-box report-summary-box">
-              <h3>Interazioni accettate per il report</h3>
+              <h3>Interazioni alimentari, alcol e integratori accettate per il report</h3>
 
               <p>
-                Queste sono le sole interazioni che entreranno nella copia paziente e nella copia medico.
+                Queste sono le sole interazioni alimentari, con alcol o integratori che entreranno nella copia paziente e nella copia medico.
               </p>
 
               {foodInteractions
