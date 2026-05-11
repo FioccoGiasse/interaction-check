@@ -10,6 +10,14 @@ import tempfile
 import urllib.request
 from pypdf import PdfReader
 from functools import lru_cache
+from io import BytesIO
+from xml.sax.saxutils import escape
+from fastapi.responses import StreamingResponse
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DB_PATH = BASE_DIR / "data" / "enia.db"
@@ -643,6 +651,182 @@ def extract_drug_interaction_candidates_from_rcp_url(
         "candidates": candidates
     }
 
+
+def pdf_safe(value) -> str:
+    if value is None:
+        return ""
+    return escape(str(value)).replace("\n", "<br/>")
+
+
+def add_pdf_paragraph(story, text, style):
+    if text:
+        story.append(Paragraph(pdf_safe(text), style))
+        story.append(Spacer(1, 0.18 * cm))
+
+
+def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
+    buffer = BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=1.5 * cm,
+        leftMargin=1.5 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=1.5 * cm,
+    )
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(
+        name="Small",
+        parent=styles["Normal"],
+        fontSize=8,
+        leading=10,
+    ))
+    styles.add(ParagraphStyle(
+        name="BoxText",
+        parent=styles["Normal"],
+        fontSize=9,
+        leading=12,
+        spaceAfter=6,
+    ))
+
+    story = []
+
+    is_patient = report_type == "patient"
+
+    title = "ENIA Interaction Check - Copia paziente" if is_patient else "ENIA Interaction Check - Copia medico"
+    story.append(Paragraph(title, styles["Title"]))
+    story.append(Spacer(1, 0.3 * cm))
+
+    generated_at = payload.get("generated_at", "")
+    patient = payload.get("patient", {})
+    clinician = payload.get("clinician", {})
+    consent = payload.get("consent", {})
+
+    intro = (
+        "Questo documento riporta solo le informazioni confermate dal medico. "
+        "Non sostituisce il giudizio clinico, il foglio illustrativo o il parere del medico o farmacista."
+        if is_patient
+        else
+        "Documento clinico di supporto. Include solo elementi accettati dal medico per il report finale, con fonti e tracciabilita disponibili."
+    )
+    story.append(Paragraph(pdf_safe(intro), styles["Normal"]))
+    story.append(Spacer(1, 0.3 * cm))
+
+    metadata_rows = [
+        ["Generato il", pdf_safe(generated_at)],
+        ["ID paziente o iniziali", pdf_safe(patient.get("identifier", ""))],
+        ["Anno di nascita", pdf_safe(patient.get("year_of_birth", ""))],
+        ["Operatore", pdf_safe(clinician.get("name", ""))],
+        ["Ruolo", pdf_safe(clinician.get("role", ""))],
+        ["Consenso completo", "Si" if consent.get("complete") else "No"],
+    ]
+
+    table = Table(metadata_rows, colWidths=[5 * cm, 11 * cm])
+    table.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (0, -1), colors.whitesmoke),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
+        ("VALIGN", (0, 0), (-1, -1), "TOP"),
+        ("FONTNAME", (0, 0), (0, -1), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, -1), 8),
+    ]))
+    story.append(table)
+    story.append(Spacer(1, 0.4 * cm))
+
+    selected_drugs = payload.get("selected_drugs", [])
+    story.append(Paragraph("Farmaci selezionati", styles["Heading2"]))
+
+    if selected_drugs:
+        drug_rows = [["Farmaco", "Principio attivo", "AIC"]]
+        for drug in selected_drugs:
+            drug_rows.append([
+                Paragraph(pdf_safe(drug.get("commercial_name", "")), styles["Small"]),
+                Paragraph(pdf_safe(drug.get("active_ingredient", "")), styles["Small"]),
+                Paragraph(pdf_safe(drug.get("aic_code", "")), styles["Small"]),
+            ])
+
+        drug_table = Table(drug_rows, colWidths=[6 * cm, 6 * cm, 4 * cm])
+        drug_table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.lightgrey),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, -1), 8),
+        ]))
+        story.append(drug_table)
+    else:
+        story.append(Paragraph("Nessun farmaco selezionato.", styles["Normal"]))
+
+    story.append(Spacer(1, 0.4 * cm))
+
+    accepted_food = payload.get("accepted_food_interactions", [])
+    story.append(Paragraph("Interazioni alimentari, alcol e integratori accettate", styles["Heading2"]))
+
+    if accepted_food:
+        for item in accepted_food:
+            add_pdf_paragraph(story, f"{item.get('active_ingredient', '')} + {item.get('food_or_substance', '')}", styles["Heading3"])
+            add_pdf_paragraph(story, item.get("interaction_summary", ""), styles["BoxText"])
+            if not is_patient:
+                add_pdf_paragraph(story, f"Fonte: {item.get('source_name', '')} - {item.get('source_section', '')}", styles["Small"])
+                add_pdf_paragraph(story, f"Stato: {item.get('validation_status', '')}", styles["Small"])
+    else:
+        story.append(Paragraph("Nessuna interazione accettata in questa sezione.", styles["Normal"]))
+
+    story.append(Spacer(1, 0.3 * cm))
+
+    accepted_drug = payload.get("accepted_drug_interactions", [])
+    story.append(Paragraph("Interazioni con altri farmaci accettate", styles["Heading2"]))
+
+    if accepted_drug:
+        for item in accepted_drug:
+            add_pdf_paragraph(story, f"{item.get('active_ingredient', '')} + {item.get('interacting_drug_or_class', '')}", styles["Heading3"])
+            add_pdf_paragraph(story, item.get("interaction_summary", ""), styles["BoxText"])
+            if not is_patient:
+                add_pdf_paragraph(story, f"Fonte: {item.get('source_name', '')} - {item.get('source_section', '')}", styles["Small"])
+                add_pdf_paragraph(story, f"Stato: {item.get('validation_status', '')}", styles["Small"])
+                add_pdf_paragraph(story, f"Riconoscimento: {item.get('recognition_status', '')}", styles["Small"])
+    else:
+        story.append(Paragraph("Nessuna interazione accettata in questa sezione.", styles["Normal"]))
+
+    story.append(Spacer(1, 0.3 * cm))
+
+    accepted_driving = payload.get("accepted_driving_sections", [])
+    story.append(Paragraph("Sezione 4.7 - Guida e uso di macchinari", styles["Heading2"]))
+
+    if accepted_driving:
+        for item in accepted_driving:
+            add_pdf_paragraph(story, item.get("commercial_name", "Farmaco selezionato"), styles["Heading3"])
+            add_pdf_paragraph(story, item.get("section_text", ""), styles["BoxText"])
+            if not is_patient:
+                add_pdf_paragraph(story, f"Fonte: {item.get('source_name', '')} - {item.get('source_section', '')}", styles["Small"])
+                add_pdf_paragraph(story, f"AIC: {item.get('aic_code', '')}", styles["Small"])
+    else:
+        story.append(Paragraph("Nessun testo 4.7 accettato per il report.", styles["Normal"]))
+
+    if not is_patient:
+        story.append(PageBreak())
+        story.append(Paragraph("Tracciabilita e note cliniche", styles["Heading2"]))
+        add_pdf_paragraph(story, f"Fonti selezionate: {', '.join(payload.get('selected_sources', []))}", styles["Normal"])
+        add_pdf_paragraph(story, f"Note cliniche: {payload.get('clinical_notes', '')}", styles["Normal"])
+        add_pdf_paragraph(story, "Consensi registrati:", styles["Heading3"])
+        for key, value in consent.items():
+            add_pdf_paragraph(story, f"{key}: {value}", styles["Small"])
+
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+
+def pdf_stream_response(buffer: BytesIO, filename: str) -> StreamingResponse:
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"'
+        }
+    )
+
 @app.post("/api/interactions/food/suggested")
 def suggest_food_interactions(payload: dict):
     selected_drugs = payload.get("selected_drugs", [])
@@ -902,3 +1086,15 @@ def get_rcp_section_47(payload: dict):
         "clinical_safety_note": "Il testo della sezione 4.7 è estratto dal RCP AIFA e non viene interpretato automaticamente."
     }
 
+
+@app.post("/api/reports/pdf/patient")
+def generate_patient_pdf(payload: dict):
+    buffer = build_report_pdf(payload, "patient")
+    return pdf_stream_response(buffer, "enia_interaction_check_copia_paziente.pdf")
+
+
+@app.post("/api/reports/pdf/clinician")
+def generate_clinician_pdf(payload: dict):
+    buffer = build_report_pdf(payload, "clinician")
+    return pdf_stream_response(buffer, "enia_interaction_check_copia_medico.pdf")
+\n
