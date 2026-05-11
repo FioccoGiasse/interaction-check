@@ -1014,6 +1014,48 @@ export default function Home() {
             )}
           </div>
 
+          {drivingSections.filter((section, index) => acceptedDrivingSectionIds.includes(section.aic_code || index)).length > 0 && (
+            <div className="selected-box report-summary-box">
+              <h3>Sezioni 4.7 guida e macchinari accettate per il report</h3>
+
+              <p>
+                Questi sono i soli testi della sezione 4.7 che entreranno nella copia paziente e nella copia medico.
+              </p>
+
+              {drivingSections
+                .filter((section, index) => acceptedDrivingSectionIds.includes(section.aic_code || index))
+                .map((section, index) => (
+                  <div key={section.aic_code || index} className="accepted-interaction-card">
+                    <strong>
+                      {section.commercial_name || "Farmaco selezionato"}
+                    </strong>
+
+                    <p>
+                      Principio attivo: {section.active_ingredient || "non disponibile"}
+                    </p>
+
+                    <div className="badges">
+                      <span className="badge blue">
+                        Fonte: {section.source_name}
+                      </span>
+
+                      <span className="badge">
+                        {section.source_section}
+                      </span>
+
+                      <span className="badge green">
+                        Accettata dal medico
+                      </span>
+                    </div>
+
+                    <div className="literal-section-text">
+                      {section.section_text}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+
           {foodInteractions.filter((interaction) => acceptedFoodInteractionIds.includes(interaction.id)).length > 0 && (
             <div className="selected-box report-summary-box">
               <h3>Interazioni alimentari, alcol e integratori accettate per il report</h3>
