@@ -53,6 +53,7 @@ export default function Home() {
   const [clinicianName, setClinicianName] = useState("");
   const [clinicianRole, setClinicianRole] = useState("");
   const [clinicalNotes, setClinicalNotes] = useState("");
+  const [consentInformation, setConsentInformation] = useState(false);
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -215,6 +216,21 @@ export default function Home() {
               rows={4}
             />
           </label>
+
+          <div className="consent-box">
+            <h3>Consenso paziente</h3>
+
+            <label className="check-row">
+              <input
+                type="checkbox"
+                checked={consentInformation}
+                onChange={(event) => setConsentInformation(event.target.checked)}
+              />
+              <span>
+                Il paziente dichiara di aver ricevuto informazioni sullo scopo informativo dello strumento.
+              </span>
+            </label>
+          </div>
         </div>
 
         <div className="section">
