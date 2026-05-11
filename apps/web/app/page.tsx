@@ -68,6 +68,8 @@ export default function Home() {
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
   const [drugSearchLoading, setDrugSearchLoading] = useState(false);
   const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
+  const [foodInteractionStatus, setFoodInteractionStatus] = useState("");
+  const [foodInteractionLoading, setFoodInteractionLoading] = useState(false);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -167,6 +169,37 @@ export default function Home() {
     setSelectedDrugs((current) =>
       current.filter((drug) => drug.id !== drugId)
     );
+  }
+
+  async function checkSuggestedFoodInteractions() {
+    if (selectedDrugs.length === 0) {
+      setFoodInteractionStatus("Seleziona almeno un farmaco prima di cercare interazioni alimentari.");
+      return;
+    }
+
+    setFoodInteractionLoading(true);
+    setFoodInteractionStatus("Ricerca interazioni alimentari nelle fonti selezionate...");
+
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/interactions/food/suggested`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          selected_drugs: selectedDrugs,
+          selected_sources: selectedSources
+        })
+      });
+
+      const data = await response.json();
+
+      setFoodInteractionStatus(data.message || "Verifica completata.");
+    } catch {
+      setFoodInteractionStatus("Errore durante la verifica delle interazioni alimentari.");
+    } finally {
+      setFoodInteractionLoading(false);
+    }
   }
 
   return (
@@ -361,6 +394,20 @@ export default function Home() {
           ) : (
             <div className="notice">
               Farmaci selezionati: {selectedDrugs.length}. Nessuna interazione alimentare strutturata disponibile nelle fonti configurate.
+            </div>
+          )}
+
+          <button
+            className="button"
+            onClick={checkSuggestedFoodInteractions}
+            disabled={foodInteractionLoading || selectedDrugs.length === 0}
+          >
+            {foodInteractionLoading ? "Verifica in corso..." : "Cerca interazioni alimentari suggerite"}
+          </button>
+
+          {foodInteractionStatus && (
+            <div className="notice">
+              {foodInteractionStatus}
             </div>
           )}
 
