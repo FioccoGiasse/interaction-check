@@ -787,6 +787,44 @@ export default function Home() {
                 ))}
               </div>
             )}
+
+            {drugInteractions.filter((interaction) => acceptedDrugInteractionIds.includes(interaction.id)).length > 0 && (
+              <div className="selected-box report-summary-box">
+                <h3>Interazioni farmacologiche accettate per il report</h3>
+
+                <p>
+                  Queste sono le sole interazioni con altri farmaci che entreranno nella copia paziente e nella copia medico.
+                </p>
+
+                {drugInteractions
+                  .filter((interaction) => acceptedDrugInteractionIds.includes(interaction.id))
+                  .map((interaction) => (
+                    <div key={interaction.id} className="accepted-interaction-card">
+                      <strong>
+                        {interaction.active_ingredient} + {interaction.interacting_drug_or_class}
+                      </strong>
+
+                      <p>{interaction.interaction_summary}</p>
+
+                      <div className="badges">
+                        <span className="badge blue">
+                          Fonte: {interaction.source_name}
+                        </span>
+
+                        {interaction.source_section && (
+                          <span className="badge">
+                            Sezione: {interaction.source_section}
+                          </span>
+                        )}
+
+                        <span className="badge green">
+                          Accettata dal medico
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
 
           {foodInteractions.filter((interaction) => acceptedFoodInteractionIds.includes(interaction.id)).length > 0 && (
