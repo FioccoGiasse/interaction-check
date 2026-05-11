@@ -251,3 +251,27 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+.field {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+  color: #344054;
+  margin-top: 16px;
+}
+
+.field span {
+  font-size: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  font-weight: 700;
+  color: #344054;
+  margin-top: 16px;
+}
+
+.field span {
+  font-size: 14px;
+}

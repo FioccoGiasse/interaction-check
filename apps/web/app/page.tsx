@@ -48,6 +48,7 @@ export default function Home() {
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [sourcesStatus, setSourcesStatus] = useState("Caricamento fonti...");
 
+  const [patientIdentifier, setPatientIdentifier] = useState("");
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -159,6 +160,16 @@ export default function Home() {
           <p className="small">
             Qui costruiremo il flusso per paziente, consenso, verifica e report.
           </p>
+
+          <label className="field">
+            <span>ID paziente o iniziali</span>
+            <input
+              className="input"
+              value={patientIdentifier}
+              onChange={(event) => setPatientIdentifier(event.target.value)}
+              placeholder="Es. Paziente 001 oppure iniziali"
+            />
+          </label>
         </div>
 
         <div className="section">
