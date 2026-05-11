@@ -68,6 +68,8 @@ export default function Home() {
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
   const [drugSearchLoading, setDrugSearchLoading] = useState(false);
   const [selectedDrugs, setSelectedDrugs] = useState<Drug[]>([]);
+  const [foodSupplementInput, setFoodSupplementInput] = useState("");
+
 
   useEffect(() => {
     async function checkApi() {
@@ -324,6 +326,47 @@ export default function Home() {
                 : "Consenso non completo. Il report non dovrebbe essere generato."}
             </div>
           </div>
+        </div>
+
+        <div className="section">
+          <h2>Alimenti e integratori</h2>
+
+          <p className="small">
+            Inserisci alimenti, bevande o integratori da includere nella verifica.
+            Per ora li aggiungiamo manualmente, senza generare interpretazioni cliniche.
+          </p>
+
+          <label className="field">
+            <span>Alimento, bevanda o integratore</span>
+            <input
+              className="input"
+              value={foodSupplementInput}
+              onChange={(event) => setFoodSupplementInput(event.target.value)}
+              placeholder="Es. pompelmo, alcol, magnesio, iperico"
+            />
+          </label>
+        </div>
+
+        <div className="section">
+          <h2>Interazioni alimentari suggerite</h2>
+
+          <p className="small">
+            Il sistema proporrà automaticamente le interazioni alimentari trovate nelle fonti selezionate, in base ai farmaci aggiunti al report.
+          </p>
+
+          {selectedDrugs.length === 0 ? (
+            <div className="warning">
+              Seleziona almeno un farmaco per cercare interazioni alimentari nelle fonti configurate.
+            </div>
+          ) : (
+            <div className="notice">
+              Farmaci selezionati: {selectedDrugs.length}. Nessuna interazione alimentare strutturata disponibile nelle fonti configurate.
+            </div>
+          )}
+
+          <p className="small">
+            Ogni interazione alimentare trovata potrà essere aggiunta o rimossa dal report finale, con fonte evidenziata.
+          </p>
         </div>
 
         <div className="section">
