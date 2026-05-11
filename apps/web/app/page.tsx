@@ -81,6 +81,12 @@ export default function Home() {
   const [drugRcpSourcesChecked, setDrugRcpSourcesChecked] = useState<any[]>([]);
   const [acceptedDrugInteractionIds, setAcceptedDrugInteractionIds] = useState<any[]>([]);
   const [excludedDrugInteractionIds, setExcludedDrugInteractionIds] = useState<any[]>([]);
+
+  const [drivingSectionStatus, setDrivingSectionStatus] = useState("");
+  const [drivingSectionLoading, setDrivingSectionLoading] = useState(false);
+  const [drivingSections, setDrivingSections] = useState<any[]>([]);
+  const [acceptedDrivingSectionIds, setAcceptedDrivingSectionIds] = useState<any[]>([]);
+  const [excludedDrivingSectionIds, setExcludedDrivingSectionIds] = useState<any[]>([]);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -248,6 +254,39 @@ export default function Home() {
       setDrugInteractionStatus("Errore durante la verifica delle interazioni con altri farmaci.");
     } finally {
       setDrugInteractionLoading(false);
+    }
+  };
+
+  const checkDrivingSection = async () => {
+    setDrivingSectionLoading(true);
+    setDrivingSectionStatus("");
+
+    try {
+      const response = await fetch(`${getApiBaseUrl()}/api/rcp/section-47`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          selected_drugs: selectedDrugs,
+          selected_sources: selectedSources
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante il recupero della sezione 4.7.");
+      }
+
+      const data = await response.json();
+
+      setDrivingSections(data.results || []);
+      setAcceptedDrivingSectionIds([]);
+      setExcludedDrivingSectionIds([]);
+      setDrivingSectionStatus(data.message || "Estrazione completata.");
+    } catch (error) {
+      setDrivingSectionStatus("Errore durante il recupero della sezione 4.7.");
+    } finally {
+      setDrivingSectionLoading(false);
     }
   };
 
@@ -823,6 +862,154 @@ export default function Home() {
                       </div>
                     </div>
                   ))}
+              </div>
+            )}
+          </div>
+
+          <div className="section-card">
+            <h2>Effetti su guida e uso di macchinari</h2>
+
+            <p>
+              Il sistema estrae letteralmente la sezione 4.7 del RCP AIFA per ogni farmaco selezionato, senza interpretazione automatica.
+            </p>
+
+            {selectedDrugs.length === 0 && (
+              <div className="warning-box">
+                Seleziona almeno un farmaco per recuperare la sezione 4.7.
+              </div>
+            )}
+
+            <button
+              type="button"
+              className="primary-button"
+              onClick={checkDrivingSection}
+              disabled={selectedDrugs.length === 0 || drivingSectionLoading}
+            >
+              {drivingSectionLoading ? "Estrazione in corso..." : "Estrai sezione 4.7 guida e macchinari"}
+            </button>
+
+            {drivingSectionStatus && (
+              <div className="notice">
+                {drivingSectionStatus}
+              </div>
+            )}
+
+            {drivingSections.length > 0 && (
+              <div className="selected-box">
+                <h3>Sezione 4.7 estratta da RCP AIFA</h3>
+
+                {drivingSections.map((section, index) => (
+                  <div key={index} className="driving-section-card">
+                    <strong>{section.commercial_name || "Farmaco selezionato"}</strong>
+
+                    <p>
+                      Principio attivo: {section.active_ingredient || "non disponibile"}
+                    </p>
+
+                    <p>
+                      AIC: {section.aic_code || "non disponibile"}
+                    </p>
+
+                    <div className="badges">
+                      <span className="badge blue">
+                        Fonte: {section.source_name}
+                      </span>
+
+                      <span className={section.section_found ? "badge green" : "badge red"}>
+                        {section.section_found ? "Sezione 4.7 trovata" : "Sezione 4.7 non trovata"}
+                      </span>
+
+                      {section.extraction_status && (
+                        <span className="badge">
+                          Estrazione: {section.extraction_status}
+                        </span>
+                      )}
+
+                      {typeof section.character_count === "number" && (
+                        <span className="badge">
+                          Caratteri: {section.character_count}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="source-links">
+                      {section.rcp_url && (
+                        <a href={section.rcp_url} target="_blank" rel="noreferrer">
+                          Apri RCP
+                        </a>
+                      )}
+
+                      {section.leaflet_url && (
+                        <a href={section.leaflet_url} target="_blank" rel="noreferrer">
+                          Apri Foglio illustrativo
+                        </a>
+                      )}
+                    </div>
+
+                    {section.section_text ? (
+                      <div className="literal-section-text">
+                        {section.section_text}
+                      </div>
+                    ) : (
+                      <p className="review-status">
+                        Nessun testo 4.7 disponibile per questo farmaco.
+                      </p>
+                    )}
+
+                    <div className="review-actions">
+                      <button
+                        type="button"
+                        className={acceptedDrivingSectionIds.includes(section.aic_code || index) ? "secondary-button active" : "secondary-button"}
+                        onClick={() => {
+                          const sectionId = section.aic_code || index;
+
+                          setAcceptedDrivingSectionIds((current) =>
+                            current.includes(sectionId)
+                              ? current
+                              : [...current, sectionId]
+                          );
+
+                          setExcludedDrivingSectionIds((current) =>
+                            current.filter((id) => id !== sectionId)
+                          );
+                        }}
+                        disabled={!section.section_text}
+                      >
+                        Accetta nel report
+                      </button>
+
+                      <button
+                        type="button"
+                        className={excludedDrivingSectionIds.includes(section.aic_code || index) ? "danger-button active" : "danger-button"}
+                        onClick={() => {
+                          const sectionId = section.aic_code || index;
+
+                          setExcludedDrivingSectionIds((current) =>
+                            current.includes(sectionId)
+                              ? current
+                              : [...current, sectionId]
+                          );
+
+                          setAcceptedDrivingSectionIds((current) =>
+                            current.filter((id) => id !== sectionId)
+                          );
+                        }}
+                      >
+                        Escludi dal report
+                      </button>
+                    </div>
+
+                    <p className="review-status">
+                      Stato revisione: {
+                        acceptedDrivingSectionIds.includes(section.aic_code || index)
+                          ? "accettata nel report"
+                          : excludedDrivingSectionIds.includes(section.aic_code || index)
+                            ? "esclusa dal report"
+                            : "da valutare"
+                      }
+                    </p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
