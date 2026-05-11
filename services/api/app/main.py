@@ -382,9 +382,48 @@ def suggest_food_interactions(payload: dict):
     interactions = []
     rcp_sources_checked = []
 
+    use_aifa_rcp = "aifa_rcp_fi" in selected_sources
+    use_enia_kb = "enia_validated_kb" in selected_sources
+
     for drug in selected_drugs:
         rcp_url = drug.get("rcp_url")
         leaflet_url = drug.get("leaflet_url")
+        source_status = "source_available" if rcp_url or leaflet_url else "source_not_available"
+        extraction_status = "not_requested"
+        candidate_count = 0
+
+        if use_aifa_rcp and rcp_url:
+            try:
+                extraction_result = extract_food_candidates_from_rcp_url(rcp_url)
+                extraction_status = "section_found" if extraction_result.get("section_found") else "section_not_found"
+                candidate_count = extraction_result.get("candidate_count", 0)
+
+                for index, candidate in enumerate(extraction_result.get("candidates", []), start=1):
+                    matched_terms = candidate.get("matched_terms", [])
+
+                    interactions.append({
+                        "id": f"rcp-{drug.get('aic_code')}-{index}",
+                        "commercial_name": drug.get("commercial_name"),
+                        "aic_code": drug.get("aic_code"),
+                        "active_ingredient": drug.get("active_ingredient"),
+                        "food_or_substance": ", ".join(matched_terms),
+                        "interaction_summary": candidate.get("candidate_text"),
+                        "severity": "non classificata",
+                        "evidence_level": "testo RCP AIFA",
+                        "mechanism": "",
+                        "recommendation": "Valutare clinicamente prima di includere nel report finale.",
+                        "patient_explanation": "",
+                        "clinician_explanation": candidate.get("candidate_text"),
+                        "source_name": candidate.get("source_name"),
+                        "source_url": candidate.get("source_url"),
+                        "source_section": candidate.get("source_section"),
+                        "validation_status": candidate.get("validation_status"),
+                        "candidate_type": "document_candidate",
+                        "matched_terms": matched_terms
+                    })
+
+            except Exception:
+                extraction_status = "extraction_error"
 
         rcp_sources_checked.append({
             "commercial_name": drug.get("commercial_name"),
@@ -393,10 +432,12 @@ def suggest_food_interactions(payload: dict):
             "rcp_url": rcp_url,
             "leaflet_url": leaflet_url,
             "source_name": "AIFA RCP e Foglio Illustrativo",
-            "status": "source_available" if rcp_url or leaflet_url else "source_not_available"
+            "status": source_status,
+            "extraction_status": extraction_status,
+            "candidate_count": candidate_count
         })
 
-    if database_exists():
+    if use_enia_kb and database_exists():
         with get_conn() as conn:
             for drug in selected_drugs:
                 active_ingredient = drug.get("active_ingredient")
@@ -435,10 +476,11 @@ def suggest_food_interactions(payload: dict):
                     interaction = dict(row)
                     interaction["commercial_name"] = drug.get("commercial_name")
                     interaction["aic_code"] = drug.get("aic_code")
+                    interaction["candidate_type"] = "validated_kb"
                     interactions.append(interaction)
 
     if interactions:
-        message = f"Trovate {len(interactions)} interazioni alimentari strutturate nelle fonti configurate."
+        message = f"Trovate {len(interactions)} interazioni o candidate interaction nelle fonti configurate."
     else:
         message = "Nessuna interazione alimentare strutturata disponibile nelle fonti configurate."
 
@@ -450,5 +492,5 @@ def suggest_food_interactions(payload: dict):
         "interactions": interactions,
         "rcp_sources_checked": rcp_sources_checked,
         "message": message,
-        "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni sono mostrate solo se presenti nella Knowledge Base ENIA strutturata e tracciabile o recuperate da fonti documentali AIFA tracciabili."
+        "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni validate provengono dalla Knowledge Base ENIA. I risultati da RCP AIFA sono candidati documentali e richiedono valutazione clinica prima dell'inclusione nel report."
     }
