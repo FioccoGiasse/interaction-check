@@ -175,17 +175,73 @@ def find_food_candidates_in_section(section_text: str, source_url: str) -> list[
     return candidates
 
 
+def find_unclassified_interaction_sentences(section_text: str, candidates: list[dict]) -> list[dict]:
+    candidate_texts = {
+        clean_document_text(candidate.get("candidate_text", ""))
+        for candidate in candidates
+    }
+
+    trigger_terms = [
+        "assunzione",
+        "concomitante",
+        "concomitanza",
+        "interazione",
+        "interazioni",
+        "esposizione",
+        "sostanze",
+        "metabolismo",
+        "induzione",
+        "induttori",
+        "inibitori",
+        "aumento",
+        "riduzione",
+        "rischio",
+        "tossicità",
+        "tossicita",
+        "monitoraggio",
+        "cautela",
+        "somministrazione"
+    ]
+
+    unclassified = []
+
+    for sentence in split_document_sentences(section_text):
+        cleaned_sentence = clean_document_text(sentence)
+
+        if not cleaned_sentence:
+            continue
+
+        if cleaned_sentence in candidate_texts:
+            continue
+
+        lower_sentence = cleaned_sentence.lower()
+
+        if any(term in lower_sentence for term in trigger_terms):
+            unclassified.append({
+                "source_section": "4.5 Interazioni con altri medicinali ed altre forme di interazione",
+                "review_status": "needs_review",
+                "sentence_text": cleaned_sentence
+            })
+
+    return unclassified[:20]
+
+
+
+
 def extract_food_candidates_from_rcp_url(url: str) -> dict:
     pdf_path = download_pdf_to_temp(url)
     text = extract_pdf_text(pdf_path)
     section = extract_rcp_section_45(text)
     candidates = find_food_candidates_in_section(section, url) if section else []
+    unclassified_sentences = find_unclassified_interaction_sentences(section, candidates) if section else []
 
     return {
         "source_url": url,
         "section_found": bool(section),
         "candidate_count": len(candidates),
-        "candidates": candidates
+        "candidates": candidates,
+        "unclassified_sentence_count": len(unclassified_sentences),
+        "unclassified_sentences": unclassified_sentences
     }
 
 def get_conn():
