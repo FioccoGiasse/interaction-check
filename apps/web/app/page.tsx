@@ -52,6 +52,7 @@ export default function Home() {
   const [patientYearOfBirth, setPatientYearOfBirth] = useState("");
   const [clinicianName, setClinicianName] = useState("");
   const [clinicianRole, setClinicianRole] = useState("");
+  const [clinicalNotes, setClinicalNotes] = useState("");
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -201,6 +202,17 @@ export default function Home() {
               value={clinicianRole}
               onChange={(event) => setClinicianRole(event.target.value)}
               placeholder="Es. Medico, farmacista"
+            />
+          </label>
+
+          <label className="field">
+            <span>Note cliniche rilevanti</span>
+            <textarea
+              className="textarea"
+              value={clinicalNotes}
+              onChange={(event) => setClinicalNotes(event.target.value)}
+              placeholder="Es. Terapia attuale, allergie note, motivo della verifica. Inserire solo dati necessari."
+              rows={4}
             />
           </label>
         </div>

@@ -275,3 +275,23 @@ body {
 .field span {
   font-size: 14px;
 }
+
+.textarea {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  resize: vertical;
+}
+
+.textarea {
+  width: 100%;
+  border: 1px solid #cfd8e3;
+  border-radius: 12px;
+  padding: 13px 14px;
+  font-size: 16px;
+  font-family: Arial, Helvetica, sans-serif;
+  resize: vertical;
+}
