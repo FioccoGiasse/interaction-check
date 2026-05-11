@@ -849,3 +849,56 @@ def suggest_drug_interactions(payload: dict):
         "clinical_safety_note": "I risultati da RCP AIFA sono candidati documentali. Devono essere valutati dal medico prima dell'inclusione nel report."
     }
 
+
+@app.post("/api/rcp/section-47")
+def get_rcp_section_47(payload: dict):
+    selected_drugs = payload.get("selected_drugs", [])
+    selected_sources = payload.get("selected_sources", [])
+
+    results = []
+
+    use_aifa_rcp = "aifa_rcp_fi" in selected_sources
+
+    for drug in selected_drugs:
+        rcp_url = drug.get("rcp_url")
+        leaflet_url = drug.get("leaflet_url")
+        section_found = False
+        section_text = ""
+        character_count = 0
+        extraction_status = "not_requested"
+
+        if use_aifa_rcp and rcp_url:
+            try:
+                extraction_result = extract_section_47_from_rcp_url(rcp_url)
+                section_found = extraction_result.get("section_found", False)
+                section_text = extraction_result.get("section_text", "")
+                character_count = extraction_result.get("character_count", 0)
+                extraction_status = "section_found" if section_found else "section_not_found"
+            except Exception:
+                extraction_status = "extraction_error"
+
+        results.append({
+            "commercial_name": drug.get("commercial_name"),
+            "aic_code": drug.get("aic_code"),
+            "active_ingredient": drug.get("active_ingredient"),
+            "rcp_url": rcp_url,
+            "leaflet_url": leaflet_url,
+            "source_name": "AIFA RCP",
+            "source_section": "4.7 Effetti sulla capacità di guidare veicoli e sull'uso di macchinari",
+            "section_found": section_found,
+            "section_text": section_text,
+            "character_count": character_count,
+            "extraction_status": extraction_status
+        })
+
+    return {
+        "checked_at": now_rome(),
+        "selected_drug_count": len(selected_drugs),
+        "selected_sources": selected_sources,
+        "section": "4.7 Effetti sulla capacità di guidare veicoli e sull'uso di macchinari",
+        "result_count": len(results),
+        "results": results,
+        "message": "Estrazione letterale sezione 4.7 completata per i farmaci selezionati.",
+        "clinical_safety_note": "Il testo della sezione 4.7 è estratto dal RCP AIFA e non viene interpretato automaticamente."
+    }
+
