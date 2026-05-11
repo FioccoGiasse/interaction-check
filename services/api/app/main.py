@@ -231,17 +231,80 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
     }
 
 @app.post("/api/interactions/food/suggested")
-def suggested_food_interactions(payload: dict):
+def suggest_food_interactions(payload: dict):
     selected_drugs = payload.get("selected_drugs", [])
     selected_sources = payload.get("selected_sources", [])
+
+    interactions = []
+    rcp_sources_checked = []
+
+    for drug in selected_drugs:
+        rcp_url = drug.get("rcp_url")
+        leaflet_url = drug.get("leaflet_url")
+
+        rcp_sources_checked.append({
+            "commercial_name": drug.get("commercial_name"),
+            "aic_code": drug.get("aic_code"),
+            "active_ingredient": drug.get("active_ingredient"),
+            "rcp_url": rcp_url,
+            "leaflet_url": leaflet_url,
+            "source_name": "AIFA RCP e Foglio Illustrativo",
+            "status": "source_available" if rcp_url or leaflet_url else "source_not_available"
+        })
+
+    if database_exists():
+        with get_conn() as conn:
+            for drug in selected_drugs:
+                active_ingredient = drug.get("active_ingredient")
+                normalized_active_ingredient = normalize_text(active_ingredient)
+
+                if not normalized_active_ingredient:
+                    continue
+
+                rows = conn.execute(
+                    """
+                    SELECT
+                        id,
+                        active_ingredient,
+                        food_or_substance,
+                        interaction_summary,
+                        severity,
+                        evidence_level,
+                        mechanism,
+                        recommendation,
+                        patient_explanation,
+                        clinician_explanation,
+                        source_name,
+                        source_url,
+                        source_section,
+                        validation_status,
+                        validated_by,
+                        validated_at
+                    FROM enia_food_interactions
+                    WHERE normalized_active_ingredient = ?
+                    ORDER BY food_or_substance ASC
+                    """,
+                    (normalized_active_ingredient,)
+                ).fetchall()
+
+                for row in rows:
+                    interaction = dict(row)
+                    interaction["commercial_name"] = drug.get("commercial_name")
+                    interaction["aic_code"] = drug.get("aic_code")
+                    interactions.append(interaction)
+
+    if interactions:
+        message = f"Trovate {len(interactions)} interazioni alimentari strutturate nelle fonti configurate."
+    else:
+        message = "Nessuna interazione alimentare strutturata disponibile nelle fonti configurate."
 
     return {
         "checked_at": now_rome(),
         "selected_drug_count": len(selected_drugs),
         "selected_sources": selected_sources,
-        "interaction_count": 0,
-        "interactions": [],
-        "message": "Nessuna interazione alimentare strutturata disponibile nelle fonti configurate.",
-        "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni saranno mostrate solo se presenti in una fonte strutturata e tracciabile."
+        "interaction_count": len(interactions),
+        "interactions": interactions,
+        "rcp_sources_checked": rcp_sources_checked,
+        "message": message,
+        "clinical_safety_note": "Il sistema non genera interazioni alimentari tramite AI. Le interazioni sono mostrate solo se presenti nella Knowledge Base ENIA strutturata e tracciabile o recuperate da fonti documentali AIFA tracciabili."
     }
-
