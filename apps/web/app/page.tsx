@@ -55,6 +55,7 @@ export default function Home() {
   const [clinicalNotes, setClinicalNotes] = useState("");
   const [consentInformation, setConsentInformation] = useState(false);
   const [consentDataUse, setConsentDataUse] = useState(false);
+  const [consentReportGeneration, setConsentReportGeneration] = useState(false);
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -240,6 +241,17 @@ export default function Home() {
               />
               <span>
                 Il paziente acconsente all’utilizzo dei dati inseriti per generare il report della verifica.
+              </span>
+            </label>
+
+            <label className="check-row">
+              <input
+                type="checkbox"
+                checked={consentReportGeneration}
+                onChange={(event) => setConsentReportGeneration(event.target.checked)}
+              />
+              <span>
+                Il paziente acconsente alla generazione di un report paziente e di un report medico.
               </span>
             </label>
           </div>
