@@ -153,6 +153,14 @@ export default function Home() {
           </p>
         </div>
 
+
+        <div className="section">
+          <h2>Flusso medico</h2>
+          <p className="small">
+            Qui costruiremo il flusso per paziente, consenso, verifica e report.
+          </p>
+        </div>
+
         <div className="section">
           <h2>Fonti dati disponibili</h2>
           <div className="status">{sourcesStatus}</div>
