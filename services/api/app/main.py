@@ -1097,4 +1097,4 @@ def generate_patient_pdf(payload: dict):
 def generate_clinician_pdf(payload: dict):
     buffer = build_report_pdf(payload, "clinician")
     return pdf_stream_response(buffer, "enia_interaction_check_copia_medico.pdf")
-\n
+
