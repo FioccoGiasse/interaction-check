@@ -49,6 +49,7 @@ export default function Home() {
   const [sourcesStatus, setSourcesStatus] = useState("Caricamento fonti...");
 
   const [patientIdentifier, setPatientIdentifier] = useState("");
+  const [patientYearOfBirth, setPatientYearOfBirth] = useState("");
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -168,6 +169,16 @@ export default function Home() {
               value={patientIdentifier}
               onChange={(event) => setPatientIdentifier(event.target.value)}
               placeholder="Es. Paziente 001 oppure iniziali"
+            />
+          </label>
+
+          <label className="field">
+            <span>Anno di nascita</span>
+            <input
+              className="input"
+              value={patientYearOfBirth}
+              onChange={(event) => setPatientYearOfBirth(event.target.value)}
+              placeholder="Es. 1978"
             />
           </label>
         </div>
