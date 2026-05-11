@@ -427,3 +427,36 @@ body {
 .source-links a:hover {
   text-decoration: underline;
 }
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.secondary-button.active {
+  border-color: #1769aa;
+  background: #e8f3ff;
+}
+
+.danger-button {
+  border: 1px solid #d92d20;
+  background: #fff;
+  color: #b42318;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.danger-button:hover,
+.danger-button.active {
+  background: #fff1f0;
+}
+
+.review-status {
+  font-size: 0.9rem;
+  color: #475467;
+  font-weight: 700;
+}

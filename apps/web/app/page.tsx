@@ -72,6 +72,8 @@ export default function Home() {
   const [foodInteractionLoading, setFoodInteractionLoading] = useState(false);
   const [foodInteractions, setFoodInteractions] = useState<any[]>([]);
   const [rcpSourcesChecked, setRcpSourcesChecked] = useState<any[]>([]);
+  const [acceptedFoodInteractionIds, setAcceptedFoodInteractionIds] = useState<any[]>([]);
+  const [excludedFoodInteractionIds, setExcludedFoodInteractionIds] = useState<any[]>([]);
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -198,6 +200,8 @@ export default function Home() {
 
       setFoodInteractions(data.interactions || []);
       setRcpSourcesChecked(data.rcp_sources_checked || []);
+      setAcceptedFoodInteractionIds([]);
+      setExcludedFoodInteractionIds([]);
       setFoodInteractionStatus(data.message || "Verifica completata.");
     } catch {
       setFoodInteractionStatus("Errore durante la verifica delle interazioni alimentari.");
@@ -512,6 +516,54 @@ export default function Home() {
                       <strong>Raccomandazione:</strong> {interaction.recommendation}
                     </p>
                   )}
+
+                  <div className="review-actions">
+                    <button
+                      type="button"
+                      className={acceptedFoodInteractionIds.includes(interaction.id) ? "secondary-button active" : "secondary-button"}
+                      onClick={() => {
+                        setAcceptedFoodInteractionIds((current) =>
+                          current.includes(interaction.id)
+                            ? current
+                            : [...current, interaction.id]
+                        );
+
+                        setExcludedFoodInteractionIds((current) =>
+                          current.filter((id) => id !== interaction.id)
+                        );
+                      }}
+                    >
+                      Accetta nel report
+                    </button>
+
+                    <button
+                      type="button"
+                      className={excludedFoodInteractionIds.includes(interaction.id) ? "danger-button active" : "danger-button"}
+                      onClick={() => {
+                        setExcludedFoodInteractionIds((current) =>
+                          current.includes(interaction.id)
+                            ? current
+                            : [...current, interaction.id]
+                        );
+
+                        setAcceptedFoodInteractionIds((current) =>
+                          current.filter((id) => id !== interaction.id)
+                        );
+                      }}
+                    >
+                      Escludi dal report
+                    </button>
+                  </div>
+
+                  <p className="review-status">
+                    Stato revisione: {
+                      acceptedFoodInteractionIds.includes(interaction.id)
+                        ? "accettata nel report"
+                        : excludedFoodInteractionIds.includes(interaction.id)
+                          ? "esclusa dal report"
+                          : "da valutare"
+                    }
+                  </p>
                 </div>
               ))}
             </div>
