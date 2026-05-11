@@ -56,6 +56,7 @@ export default function Home() {
   const [consentInformation, setConsentInformation] = useState(false);
   const [consentDataUse, setConsentDataUse] = useState(false);
   const [consentReportGeneration, setConsentReportGeneration] = useState(false);
+  const [consentCopyReceived, setConsentCopyReceived] = useState(false);
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -252,6 +253,17 @@ export default function Home() {
               />
               <span>
                 Il paziente acconsente alla generazione di un report paziente e di un report medico.
+              </span>
+            </label>
+
+            <label className="check-row">
+              <input
+                type="checkbox"
+                checked={consentCopyReceived}
+                onChange={(event) => setConsentCopyReceived(event.target.checked)}
+              />
+              <span>
+                Il paziente dichiara di ricevere o poter ricevere copia del report informativo.
               </span>
             </label>
           </div>
