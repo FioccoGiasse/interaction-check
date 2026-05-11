@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env
+__pycache__/
+*.pyc
+
+apps/web/node_modules/
+apps/web/.next/
+
+services/api/data/
