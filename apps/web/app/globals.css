@@ -460,3 +460,24 @@ body {
   color: #475467;
   font-weight: 700;
 }
+
+.report-summary-box {
+  border-color: #b7e4c7;
+  background: #f6fff8;
+}
+
+.accepted-interaction-card {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #b7e4c7;
+  border-radius: 14px;
+  background: white;
+  margin-top: 12px;
+}
+
+.accepted-interaction-card p {
+  margin: 0;
+  color: #344054;
+  line-height: 1.45;
+}
