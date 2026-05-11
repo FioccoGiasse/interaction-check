@@ -438,6 +438,35 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
     }
 
 
+
+def extract_rcp_section_47(text: str) -> str:
+    compact = clean_document_text(text)
+
+    patterns = [
+        r"4\s*[\.\)]\s*7\s+Effetti.*?(?=4\s*[\.\)]\s*8\s+|5\s*[\.\)]\s*1\s+|$)",
+        r"4\.7\s+Effetti.*?(?=4\.8\s+|5\.1\s+|$)",
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, compact, flags=re.IGNORECASE | re.DOTALL)
+        if match:
+            return clean_document_text(match.group(0))
+
+    return ""
+
+
+def extract_section_47_from_rcp_url(url: str) -> dict:
+    pdf_path = download_pdf_to_temp(url)
+    text = extract_pdf_text(pdf_path)
+    section = extract_rcp_section_47(text)
+
+    return {
+        "source_url": url,
+        "section_found": bool(section),
+        "section_text": section,
+        "character_count": len(section)
+    }
+
 DRUG_INTERACTION_CLASS_TERMS = [
     "anticoagulanti orali",
     "anticoagulanti",
