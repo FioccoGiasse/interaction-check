@@ -12,6 +12,24 @@ type Source = {
   clinical_interaction_source: boolean;
 };
 
+type Drug = {
+  id: number;
+  aic_code: string;
+  commercial_name: string;
+  package_description: string;
+  marketing_authorisation_holder: string;
+  administrative_status: string;
+  pharmaceutical_form: string;
+  atc_code: string;
+  active_ingredient: string;
+  supply_regime: string;
+  leaflet_url: string;
+  rcp_url: string;
+  source: string;
+  source_url: string;
+  source_updated_at: string;
+};
+
 function getApiBaseUrl() {
   if (typeof window === "undefined") return "";
 
@@ -29,6 +47,11 @@ export default function Home() {
   const [sources, setSources] = useState<Source[]>([]);
   const [selectedSources, setSelectedSources] = useState<string[]>([]);
   const [sourcesStatus, setSourcesStatus] = useState("Caricamento fonti...");
+
+  const [drugQuery, setDrugQuery] = useState("");
+  const [drugResults, setDrugResults] = useState<Drug[]>([]);
+  const [drugSearchStatus, setDrugSearchStatus] = useState("");
+  const [drugSearchLoading, setDrugSearchLoading] = useState(false);
 
   useEffect(() => {
     async function checkApi() {
@@ -78,6 +101,38 @@ export default function Home() {
     });
   }
 
+  async function searchDrugs() {
+    const cleanQuery = drugQuery.trim();
+
+    if (cleanQuery.length < 2) {
+      setDrugSearchStatus("Inserisci almeno 2 caratteri.");
+      setDrugResults([]);
+      return;
+    }
+
+    setDrugSearchLoading(true);
+    setDrugSearchStatus("Ricerca in corso...");
+    setDrugResults([]);
+
+    try {
+      const response = await fetch(
+        `${getApiBaseUrl()}/api/drugs/search?q=${encodeURIComponent(cleanQuery)}`
+      );
+
+      const data = await response.json();
+
+      setDrugResults(data.results || []);
+      setDrugSearchStatus(
+        `Risultati trovati: ${data.count || 0}. Fonte: AIFA Anagrafica Farmaci.`
+      );
+    } catch {
+      setDrugSearchStatus("Errore durante la ricerca farmaci.");
+      setDrugResults([]);
+    } finally {
+      setDrugSearchLoading(false);
+    }
+  }
+
   return (
     <main className="container">
       <div className="card">
@@ -93,8 +148,8 @@ export default function Home() {
           <h2>Stato sistema</h2>
           <div className="status">{apiStatus}</div>
           <p className="small">
-            Frontend e backend sono collegati. I prossimi moduli useranno solo
-            fonti selezionate e tracciabili.
+            Frontend e backend sono collegati. I moduli useranno solo fonti
+            selezionate e tracciabili.
           </p>
         </div>
 
@@ -116,18 +171,14 @@ export default function Home() {
                 />
 
                 <div>
-                  <div className="source-title">
-                    {source.name}
-                  </div>
+                  <div className="source-title">{source.name}</div>
 
                   <div className="source-description">
                     {source.description}
                   </div>
 
                   <div className="badges">
-                    <span className="badge">
-                      {source.source_type}
-                    </span>
+                    <span className="badge">{source.source_type}</span>
 
                     <span className={source.enabled ? "badge green" : "badge red"}>
                       {source.enabled ? "attiva" : "non attiva"}
@@ -158,14 +209,87 @@ export default function Home() {
                 {selectedSources.map((sourceId) => {
                   const source = sources.find((item) => item.id === sourceId);
 
-                  return (
-                    <li key={sourceId}>
-                      {source?.name || sourceId}
-                    </li>
-                  );
+                  return <li key={sourceId}>{source?.name || sourceId}</li>;
                 })}
               </ul>
             )}
+          </div>
+        </div>
+
+        <div className="section">
+          <h2>Ricerca farmaco AIFA</h2>
+
+          <p className="small">
+            Questa ricerca usa l’anagrafica AIFA importata. I risultati mostrano
+            sempre la fonte del dato.
+          </p>
+
+          <div className="search-row">
+            <input
+              className="input"
+              value={drugQuery}
+              onChange={(event) => setDrugQuery(event.target.value)}
+              placeholder="Cerca per nome, principio attivo o AIC. Esempio: Tachipirina"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  searchDrugs();
+                }
+              }}
+            />
+
+            <button
+              className="button"
+              onClick={searchDrugs}
+              disabled={drugSearchLoading}
+            >
+              {drugSearchLoading ? "Cerco..." : "Cerca"}
+            </button>
+          </div>
+
+          {drugSearchStatus && (
+            <div className="notice">{drugSearchStatus}</div>
+          )}
+
+          <div className="drug-results">
+            {drugResults.map((drug) => (
+              <div key={drug.id} className="drug-card">
+                <div className="drug-header">
+                  <h3>{drug.commercial_name}</h3>
+                  <span className="badge green">Fonte: {drug.source}</span>
+                </div>
+
+                <div className="drug-grid">
+                  <p><strong>AIC:</strong> {drug.aic_code || "Non disponibile"}</p>
+                  <p><strong>Principio attivo:</strong> {drug.active_ingredient || "Non disponibile"}</p>
+                  <p><strong>ATC:</strong> {drug.atc_code || "Non disponibile"}</p>
+                  <p><strong>Forma:</strong> {drug.pharmaceutical_form || "Non disponibile"}</p>
+                  <p><strong>Regime:</strong> {drug.supply_regime || "Non disponibile"}</p>
+                  <p><strong>Titolare:</strong> {drug.marketing_authorisation_holder || "Non disponibile"}</p>
+                  <p><strong>Stato:</strong> {drug.administrative_status || "Non disponibile"}</p>
+                </div>
+
+                <p><strong>Confezione:</strong> {drug.package_description || "Non disponibile"}</p>
+
+                <div className="link-row">
+                  {drug.leaflet_url && (
+                    <a href={drug.leaflet_url} target="_blank" rel="noreferrer">
+                      Foglio illustrativo
+                    </a>
+                  )}
+
+                  {drug.rcp_url && (
+                    <a href={drug.rcp_url} target="_blank" rel="noreferrer">
+                      RCP
+                    </a>
+                  )}
+                </div>
+
+                <p className="small">
+                  Dato recuperato da {drug.source}. Import database:{" "}
+                  {drug.source_updated_at}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
