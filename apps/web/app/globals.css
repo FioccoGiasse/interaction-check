@@ -524,3 +524,10 @@ body {
   line-height: 1.45;
   font-size: 0.95rem;
 }
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}

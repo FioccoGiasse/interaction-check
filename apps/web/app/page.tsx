@@ -90,6 +90,7 @@ export default function Home() {
 
   const [reportPayload, setReportPayload] = useState<any | null>(null);
   const [reportStatus, setReportStatus] = useState("");
+  const [pdfLoading, setPdfLoading] = useState("");
   const [foodSupplementInput, setFoodSupplementInput] = useState("");
 
 
@@ -333,6 +334,60 @@ export default function Home() {
 
     setReportPayload(payload);
     setReportStatus("Dati report preparati. Il PDF userà solo gli elementi accettati dal medico.");
+  };
+
+  const downloadReportPdf = async (reportType: "patient" | "clinician") => {
+    if (!reportPayload) {
+      setReportStatus("Prepara prima i dati del report.");
+      return;
+    }
+
+    if (!consentComplete) {
+      setReportStatus("Consenso non completo. Il PDF non dovrebbe essere generato.");
+      return;
+    }
+
+    const endpoint = reportType === "patient"
+      ? "/api/reports/pdf/patient"
+      : "/api/reports/pdf/clinician";
+
+    const filename = reportType === "patient"
+      ? "enia_interaction_check_copia_paziente.pdf"
+      : "enia_interaction_check_copia_medico.pdf";
+
+    setPdfLoading(reportType);
+
+    try {
+      const response = await fetch(`${getApiBaseUrl()}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(reportPayload)
+      });
+
+      if (!response.ok) {
+        throw new Error("Errore durante la generazione del PDF.");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.URL.revokeObjectURL(url);
+
+      setReportStatus("PDF generato correttamente.");
+    } catch (error) {
+      setReportStatus("Errore durante la generazione del PDF.");
+    } finally {
+      setPdfLoading("");
+    }
   };
 
   return (
