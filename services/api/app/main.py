@@ -35,3 +35,56 @@ def health():
         "service": "api",
         "checked_at": now_rome()
     }
+
+@app.get("/api/sources")
+def get_sources():
+    return {
+        "checked_at": now_rome(),
+        "sources": [
+            {
+                "id": "aifa_registry",
+                "name": "AIFA Anagrafica Farmaci",
+                "description": "Fonte per identificare farmaci autorizzati in Italia, AIC, principio attivo, ATC, forma e confezione.",
+                "source_type": "official_registry",
+                "enabled": True,
+                "configured": False,
+                "clinical_interaction_source": False
+            },
+            {
+                "id": "aifa_rcp_fi",
+                "name": "AIFA RCP e Foglio Illustrativo",
+                "description": "Fonte documentale per Riassunto delle Caratteristiche del Prodotto e Foglio Illustrativo.",
+                "source_type": "official_document",
+                "enabled": True,
+                "configured": False,
+                "clinical_interaction_source": False
+            },
+            {
+                "id": "enia_validated_kb",
+                "name": "ENIA Knowledge Base validata",
+                "description": "Fonte interna strutturata per interazioni validate da medico o farmacista.",
+                "source_type": "validated_internal_knowledge_base",
+                "enabled": True,
+                "configured": False,
+                "clinical_interaction_source": True
+            },
+            {
+                "id": "commercial_provider",
+                "name": "Provider clinico commerciale",
+                "description": "Fonte esterna opzionale per interazioni cliniche, configurabile in futuro.",
+                "source_type": "external_clinical_provider",
+                "enabled": False,
+                "configured": False,
+                "clinical_interaction_source": True
+            },
+            {
+                "id": "controlled_chatbot",
+                "name": "Assistente ENIA controllato",
+                "description": "Interfaccia conversazionale che può spiegare solo dati strutturati restituiti dal backend.",
+                "source_type": "controlled_llm_interface",
+                "enabled": True,
+                "configured": False,
+                "clinical_interaction_source": False
+            }
+        ]
+    }
