@@ -54,6 +54,7 @@ export default function Home() {
   const [clinicianRole, setClinicianRole] = useState("");
   const [clinicalNotes, setClinicalNotes] = useState("");
   const [consentInformation, setConsentInformation] = useState(false);
+  const [consentDataUse, setConsentDataUse] = useState(false);
   const [drugQuery, setDrugQuery] = useState("");
   const [drugResults, setDrugResults] = useState<Drug[]>([]);
   const [drugSearchStatus, setDrugSearchStatus] = useState("");
@@ -228,6 +229,17 @@ export default function Home() {
               />
               <span>
                 Il paziente dichiara di aver ricevuto informazioni sullo scopo informativo dello strumento.
+              </span>
+            </label>
+
+            <label className="check-row">
+              <input
+                type="checkbox"
+                checked={consentDataUse}
+                onChange={(event) => setConsentDataUse(event.target.checked)}
+              />
+              <span>
+                Il paziente acconsente all’utilizzo dei dati inseriti per generare il report della verifica.
               </span>
             </label>
           </div>
