@@ -690,25 +690,6 @@ export default function Home() {
         </div>
 
         <div className="section">
-          <h2>Alimenti e integratori</h2>
-
-          <p className="small">
-            Inserisci alimenti, bevande o integratori da includere nella verifica.
-            Per ora li aggiungiamo manualmente, senza generare interpretazioni cliniche.
-          </p>
-
-          <label className="field">
-            <span>Alimento, bevanda o integratore</span>
-            <input
-              className="input"
-              value={foodSupplementInput}
-              onChange={(event) => setFoodSupplementInput(event.target.value)}
-              placeholder="Es. pompelmo, alcol, magnesio, iperico"
-            />
-          </label>
-        </div>
-
-        <div className="section">
           <h2>Interazioni alimentari suggerite</h2>
 
           <p className="small">
