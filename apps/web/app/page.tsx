@@ -692,7 +692,36 @@ export default function Home() {
         </div>
 
         <div className="section">
-          <h2>Interazioni alimentari</h2>
+            <h2>Interazioni alimentari, alcol e sostanze correlate</h2>
+
+            <details className="keyword-warning-box">
+              <summary>ATTENZIONE: ricerca basata sulle parole chiave elencate sotto</summary>
+
+              <p className="small">
+                Questa sezione usa parole chiave controllate nella sezione 4.5 del RCP AIFA e nelle fonti selezionate. La mancata estrazione di candidati non conferma l’assenza di interazioni. Prima di concludere la revisione, verificare sempre RCP e Foglio Illustrativo AIFA.
+              </p>
+
+              <p className="small">
+                Parole chiave e categorie considerate:
+              </p>
+
+              <ul className="small">
+                <li>Alimenti e assunzione: alimento, alimenti, alimentare, alimentari, cibo, cibi, cibarsi, pasto, pasti, pranzo, cena, colazione, snack, spuntino, nutrizione, dieta, diete, dietetico, dietetici, digiuno, digiuna, digiunare, stomaco pieno, stomaco vuoto, a stomaco pieno, a stomaco vuoto.</li>
+                <li>Bevande: bevanda, bevande, acqua, acque, succo, succhi, spremuta, spremute, tè, the, caffè, caffe, caffeina, cola, bevanda energetica, bevande energetiche, energy drink.</li>
+                <li>Latte e derivati: latte, latticino, latticini, derivato del latte, derivati del latte, yogurt, formaggio, formaggi, calcio, alimenti ricchi di calcio.</li>
+                <li>Agrumi, frutta e succhi: pompelmo, pompelmi, succo di pompelmo, agrume, agrumi, arancia, arance, succo d’arancia, limone, limoni, lime, cranberry, mirtillo rosso, mirtilli rossi.</li>
+                <li>Alcol: alcol, alcool, alcolico, alcolici, alcolica, alcoliche, bevanda alcolica, bevande alcoliche, etanolo, consumo di alcol, abuso di alcol, alcolismo, alcoolismo, etilismo.</li>
+                <li>Erbe e prodotti vegetali: erba, erbe, erboristico, erboristici, erboristica, erboristiche, fitoterapico, fitoterapici, fitoterapia, prodotto erboristico, prodotti erboristici, iperico, erba di San Giovanni, ginkgo, ginkgo biloba, ginseng, echinacea, valeriana, kava, liquirizia, aglio, zenzero, curcuma.</li>
+                <li>Integratori e supplementi: integratore, integratori, supplemento, supplementi, vitamina, vitamine, vitamina K, vitamina D, vitamina A, vitamina E, multivitaminico, multivitaminici, minerale, minerali.</li>
+                <li>Minerali e sali: ferro, calcio, magnesio, potassio, sodio, zinco, alluminio, antiacido, antiacidi, sale, sali minerali.</li>
+                <li>Sostanze nutrizionali: fibra, fibre, crusca, soia, proteina, proteine, aminoacido, aminoacidi, creatina, omega 3, omega-3, probiotico, probiotici, prebiotico, prebiotici.</li>
+                <li>Sostanze da revisionare: caffeina, nicotina, teina, alcaloidi, tiramina, alimenti ricchi di tiramina.</li>
+              </ul>
+
+              <p className="small">
+                Le parole chiave servono solo a generare candidati documentali. Il medico deve accettare o escludere ogni elemento prima che entri nel report.
+              </p>
+            </details>
 
           <p className="small">
             Il sistema legge le fonti selezionate e mostra i candidati documentali relativi a possibili interazioni tra farmaci e alimenti.
@@ -1175,7 +1204,7 @@ export default function Home() {
                       </div>
                     ) : (
                       <p className="review-status">
-                        Nessun testo 4.7 disponibile per questo farmaco.
+                        Testo 4.7 non estratto automaticamente. Verifica manuale necessaria nel RCP/FI AIFA prima di concludere la revisione.
                       </p>
                     )}
 

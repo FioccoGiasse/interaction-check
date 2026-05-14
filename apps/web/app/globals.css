@@ -531,3 +531,28 @@ body {
   gap: 12px;
   margin-top: 14px;
 }
+
+
+.keyword-warning-box {
+  border: 2px solid #f59e0b;
+  background: #fffbeb;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+
+.keyword-warning-box summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #92400e;
+  font-size: 1rem;
+}
+
+.keyword-warning-box ul {
+  margin-top: 10px;
+  padding-left: 22px;
+}
+
+.keyword-warning-box li {
+  margin-bottom: 6px;
+}
