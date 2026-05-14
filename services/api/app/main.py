@@ -724,6 +724,21 @@ def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
     clinician = payload.get("clinician", {})
     consent = payload.get("consent", {})
 
+    required_consent_keys = [
+        "information",
+        "data_use",
+        "report_generation",
+        "copy_received",
+        "complete",
+    ]
+
+    if not all(consent.get(key) is True for key in required_consent_keys):
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=400,
+            detail="PDF reports cannot be generated without complete patient consent."
+        )
+
     intro = (
         "Questo documento riporta solo le informazioni confermate dal medico. "
         "Non sostituisce il giudizio clinico, il foglio illustrativo o il parere del medico o farmacista."
