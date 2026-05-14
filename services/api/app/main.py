@@ -664,6 +664,26 @@ def add_pdf_paragraph(story, text, style):
         story.append(Spacer(1, 0.18 * cm))
 
 
+def add_consent_section(story, consent, styles):
+    story.append(Paragraph("Consenso informato paziente", styles["Heading2"]))
+
+    consent_complete = "Si" if consent.get("complete") else "No"
+    add_pdf_paragraph(story, f"Consenso completo: {consent_complete}", styles["Normal"])
+
+    consent_rows = [
+        ("information", "Il paziente dichiara di aver ricevuto informazioni sullo scopo informativo dello strumento."),
+        ("data_use", "Il paziente acconsente all’utilizzo dei dati inseriti per generare il report della verifica."),
+        ("report_generation", "Il paziente acconsente alla generazione di un report paziente e di un report medico."),
+        ("copy_received", "Il paziente dichiara di ricevere o poter ricevere copia del report informativo."),
+    ]
+
+    for key, text in consent_rows:
+        status = "Si" if consent.get(key) else "No"
+        add_pdf_paragraph(story, f"{status} - {text}", styles["Normal"])
+
+    story.append(Spacer(1, 0.4 * cm))
+
+
 def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
     buffer = BytesIO()
 
@@ -733,6 +753,7 @@ def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
     ]))
     story.append(table)
     story.append(Spacer(1, 0.4 * cm))
+    add_consent_section(story, consent, styles)
 
     selected_drugs = payload.get("selected_drugs", [])
     story.append(Paragraph("Farmaci selezionati", styles["Heading2"]))
