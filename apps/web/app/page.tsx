@@ -468,6 +468,90 @@ export default function Home() {
         </details>
 
         <div className="section">
+          <h2>Ricerca farmaco AIFA</h2>
+
+          <p className="small">
+            Questa ricerca usa l’anagrafica AIFA importata. I risultati mostrano
+            sempre la fonte del dato.
+          </p>
+
+          <div className="search-row">
+            <input
+              className="input"
+              value={drugQuery}
+              onChange={(event) => setDrugQuery(event.target.value)}
+              placeholder="Cerca per nome, principio attivo o AIC. Esempio: Tachipirina"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  searchDrugs();
+                }
+              }}
+            />
+
+            <button
+              className="button"
+              onClick={searchDrugs}
+              disabled={drugSearchLoading}
+            >
+              {drugSearchLoading ? "Cerco..." : "Cerca"}
+            </button>
+          </div>
+
+          {drugSearchStatus && (
+            <div className="notice">{drugSearchStatus}</div>
+          )}
+
+          <div className="drug-results">
+            {drugResults.map((drug) => (
+              <div key={drug.id} className="drug-card">
+                <div className="drug-header">
+                  <h3>{drug.commercial_name}</h3>
+                  <span className="badge green">Fonte: {drug.source}</span>
+                </div>
+
+                <div className="drug-grid">
+                  <p><strong>AIC:</strong> {drug.aic_code || "Non disponibile"}</p>
+                  <p><strong>Principio attivo:</strong> {drug.active_ingredient || "Non disponibile"}</p>
+                  <p><strong>ATC:</strong> {drug.atc_code || "Non disponibile"}</p>
+                  <p><strong>Forma:</strong> {drug.pharmaceutical_form || "Non disponibile"}</p>
+                  <p><strong>Regime:</strong> {drug.supply_regime || "Non disponibile"}</p>
+                  <p><strong>Titolare:</strong> {drug.marketing_authorisation_holder || "Non disponibile"}</p>
+                  <p><strong>Stato:</strong> {drug.administrative_status || "Non disponibile"}</p>
+                </div>
+
+                <p><strong>Confezione:</strong> {drug.package_description || "Non disponibile"}</p>
+
+                <div className="link-row">
+                  {drug.leaflet_url && (
+                    <a href={drug.leaflet_url} target="_blank" rel="noreferrer">
+                      Foglio illustrativo
+                    </a>
+                  )}
+
+                  {drug.rcp_url && (
+                    <a href={drug.rcp_url} target="_blank" rel="noreferrer">
+                      RCP
+                    </a>
+                  )}
+                </div>
+
+                <button
+                  className="button secondary"
+                  onClick={() => addDrugToReport(drug)}
+                >
+                  Aggiungi al report
+                </button>
+
+                <p className="small">
+                  Dato recuperato da {drug.source}. Import database:{" "}
+                  {drug.source_updated_at}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="section">
           <h2>Flusso medico</h2>
           <p className="small">
             Qui costruiremo il flusso per paziente, consenso, verifica e report.
@@ -1307,89 +1391,6 @@ export default function Home() {
 
         </div>
 
-        <div className="section">
-          <h2>Ricerca farmaco AIFA</h2>
-
-          <p className="small">
-            Questa ricerca usa l’anagrafica AIFA importata. I risultati mostrano
-            sempre la fonte del dato.
-          </p>
-
-          <div className="search-row">
-            <input
-              className="input"
-              value={drugQuery}
-              onChange={(event) => setDrugQuery(event.target.value)}
-              placeholder="Cerca per nome, principio attivo o AIC. Esempio: Tachipirina"
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  searchDrugs();
-                }
-              }}
-            />
-
-            <button
-              className="button"
-              onClick={searchDrugs}
-              disabled={drugSearchLoading}
-            >
-              {drugSearchLoading ? "Cerco..." : "Cerca"}
-            </button>
-          </div>
-
-          {drugSearchStatus && (
-            <div className="notice">{drugSearchStatus}</div>
-          )}
-
-          <div className="drug-results">
-            {drugResults.map((drug) => (
-              <div key={drug.id} className="drug-card">
-                <div className="drug-header">
-                  <h3>{drug.commercial_name}</h3>
-                  <span className="badge green">Fonte: {drug.source}</span>
-                </div>
-
-                <div className="drug-grid">
-                  <p><strong>AIC:</strong> {drug.aic_code || "Non disponibile"}</p>
-                  <p><strong>Principio attivo:</strong> {drug.active_ingredient || "Non disponibile"}</p>
-                  <p><strong>ATC:</strong> {drug.atc_code || "Non disponibile"}</p>
-                  <p><strong>Forma:</strong> {drug.pharmaceutical_form || "Non disponibile"}</p>
-                  <p><strong>Regime:</strong> {drug.supply_regime || "Non disponibile"}</p>
-                  <p><strong>Titolare:</strong> {drug.marketing_authorisation_holder || "Non disponibile"}</p>
-                  <p><strong>Stato:</strong> {drug.administrative_status || "Non disponibile"}</p>
-                </div>
-
-                <p><strong>Confezione:</strong> {drug.package_description || "Non disponibile"}</p>
-
-                <div className="link-row">
-                  {drug.leaflet_url && (
-                    <a href={drug.leaflet_url} target="_blank" rel="noreferrer">
-                      Foglio illustrativo
-                    </a>
-                  )}
-
-                  {drug.rcp_url && (
-                    <a href={drug.rcp_url} target="_blank" rel="noreferrer">
-                      RCP
-                    </a>
-                  )}
-                </div>
-
-                <button
-                  className="button secondary"
-                  onClick={() => addDrugToReport(drug)}
-                >
-                  Aggiungi al report
-                </button>
-
-                <p className="small">
-                  Dato recuperato da {drug.source}. Import database:{" "}
-                  {drug.source_updated_at}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
         <details className="section">
           <summary>Stato sistema</summary>
           <div className="status">{apiStatus}</div>
