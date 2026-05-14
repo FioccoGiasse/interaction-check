@@ -403,15 +403,6 @@ export default function Home() {
             Passaggi: seleziona le fonti dati, cerca e aggiungi i farmaci del paziente, verifica le possibili interazioni e la sezione 4.7 del RCP, accetta o escludi gli elementi da includere, registra il consenso e genera la copia paziente e la copia medico.
           </p>
 
-        <div className="section">
-          <h2>Stato sistema</h2>
-          <div className="status">{apiStatus}</div>
-          <p className="small">
-            Frontend e backend sono collegati. I moduli useranno solo fonti
-            selezionate e tracciabili.
-          </p>
-        </div>
-
 
         <div className="section">
           <h2>Flusso medico</h2>
@@ -1396,6 +1387,15 @@ export default function Home() {
             ))}
           </div>
         </div>
+        <details className="section">
+          <summary>Stato sistema</summary>
+          <div className="status">{apiStatus}</div>
+          <p className="small">
+            Frontend e backend sono collegati. I moduli useranno solo fonti
+            selezionate e tracciabili.
+          </p>
+        </details>
+
       </div>
     </main>
   );
