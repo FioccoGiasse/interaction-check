@@ -475,7 +475,7 @@ def get_sources():
     }
 
 @app.get("/api/drugs/search")
-def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1, le=50)):
+def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(50, ge=1, le=50)):
     if not database_exists():
         return {
             "query": q,
@@ -485,11 +485,47 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
         }
 
     normalized_query = normalize_text(q)
-    like_query = f"%{normalized_query}%"
-    raw_like_query = f"%{q.strip()}%"
+    normalized_terms = [term for term in normalized_query.split() if term]
+    raw_terms = [term.lower() for term in q.strip().split() if term]
+
+    where_parts = []
+    params = []
+
+    for index, normalized_term in enumerate(normalized_terms):
+        raw_term = raw_terms[index] if index < len(raw_terms) else normalized_term
+
+        where_parts.append("""
+            (
+                normalized_commercial_name LIKE ?
+                OR normalized_active_ingredient LIKE ?
+                OR aic_code LIKE ?
+                OR LOWER(commercial_name) LIKE ?
+                OR LOWER(active_ingredient) LIKE ?
+                OR LOWER(package_description) LIKE ?
+                OR LOWER(pharmaceutical_form) LIKE ?
+                OR LOWER(marketing_authorisation_holder) LIKE ?
+            )
+        """)
+
+        normalized_like = f"%{normalized_term}%"
+        raw_like = f"%{raw_term}%"
+
+        params.extend([
+            normalized_like,
+            normalized_like,
+            raw_like,
+            raw_like,
+            raw_like,
+            raw_like,
+            raw_like,
+            raw_like,
+        ])
+
+    where_clause = " AND ".join(where_parts) if where_parts else "1 = 0"
+    params.append(limit)
 
     with get_conn() as conn:
-        rows = conn.execute("""
+        rows = conn.execute(f"""
             SELECT
                 id,
                 aic_code,
@@ -507,20 +543,10 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
                 source_url,
                 source_updated_at
             FROM drugs
-            WHERE
-                normalized_commercial_name LIKE ?
-                OR normalized_active_ingredient LIKE ?
-                OR aic_code LIKE ?
-                OR commercial_name LIKE ?
+            WHERE {where_clause}
             ORDER BY commercial_name ASC
             LIMIT ?
-        """, (
-            like_query,
-            like_query,
-            raw_like_query,
-            raw_like_query,
-            limit
-        )).fetchall()
+        """, params).fetchall()
 
     results = []
 
