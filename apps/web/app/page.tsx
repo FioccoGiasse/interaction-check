@@ -364,8 +364,8 @@ export default function Home() {
       : "/api/reports/pdf/clinician";
 
     const filename = reportType === "patient"
-      ? "enia_interaction_check_copia_paziente.pdf"
-      : "enia_interaction_check_copia_medico.pdf";
+      ? "interaction_check_demo_v1_sp_copia_paziente.pdf"
+      : "interaction_check_demo_v1_sp_copia_medico.pdf";
 
     setPdfLoading(reportType);
 

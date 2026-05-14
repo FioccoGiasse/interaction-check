@@ -23,9 +23,9 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 DB_PATH = BASE_DIR / "data" / "enia.db"
 
 app = FastAPI(
-    title="ENIA Interaction Check API",
+    title="Interaction Check Demo V1 · SP API",
     version="0.1.0",
-    description="Backend API for ENIA Interaction Check"
+    description="Backend API per Interaction Check Demo V1 · SP"
 )
 
 app.add_middleware(
@@ -218,7 +218,7 @@ def download_pdf_to_temp(url: str) -> Path:
     request = urllib.request.Request(
         url,
         headers={
-            "User-Agent": "ENIA Interaction Check research prototype"
+            "User-Agent": "Interaction Check Demo V1 SP research prototype"
         },
     )
 
@@ -369,7 +369,7 @@ def database_exists():
 @app.get("/")
 def root():
     return {
-        "app": "ENIA Interaction Check",
+        "app": "Interaction Check Demo V1 · SP",
         "status": "running",
         "checked_at": now_rome()
     }
@@ -859,7 +859,7 @@ def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
 
     is_patient = report_type == "patient"
 
-    title = "ENIA Interaction Check - Copia paziente" if is_patient else "ENIA Interaction Check - Copia medico"
+    title = "Interaction Check Demo V1 · SP - Copia paziente" if is_patient else "Interaction Check Demo V1 · SP - Copia medico"
     story.append(Paragraph(title, styles["Title"]))
     story.append(Spacer(1, 0.3 * cm))
 
@@ -1283,11 +1283,11 @@ def get_rcp_section_47(payload: dict):
 @app.post("/api/reports/pdf/patient")
 def generate_patient_pdf(payload: dict):
     buffer = build_report_pdf(payload, "patient")
-    return pdf_stream_response(buffer, "enia_interaction_check_copia_paziente.pdf")
+    return pdf_stream_response(buffer, "interaction_check_demo_v1_sp_copia_paziente.pdf")
 
 
 @app.post("/api/reports/pdf/clinician")
 def generate_clinician_pdf(payload: dict):
     buffer = build_report_pdf(payload, "clinician")
-    return pdf_stream_response(buffer, "enia_interaction_check_copia_medico.pdf")
+    return pdf_stream_response(buffer, "interaction_check_demo_v1_sp_copia_medico.pdf")
 

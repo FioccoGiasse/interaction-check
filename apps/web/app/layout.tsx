@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "ENIA Interaction Check",
-  description: "Italian healthcare interaction checking platform"
+  title: "Interaction Check Demo V1 · SP",
+  description: "Demo SP per verifica documentale di interazioni e report"
 };
 
 export default function RootLayout({
