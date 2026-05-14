@@ -554,9 +554,9 @@ export default function Home() {
         </div>
 
         <div className="section">
-          <h2>Flusso medico</h2>
+          <h2>Dettagli paziente e professionista</h2>
           <p className="small">
-            Qui costruiremo il flusso per paziente, consenso, verifica e report.
+            Inserisci i dati essenziali per documentare la verifica, associare i farmaci selezionati al paziente e preparare le copie del report.
           </p>
 
           <div className="notice">
@@ -606,7 +606,7 @@ export default function Home() {
           </label>
 
           <label className="field">
-            <span>Nome operatore</span>
+            <span>Nome professionista</span>
             <input
               className="input"
               value={clinicianName}
@@ -616,7 +616,7 @@ export default function Home() {
           </label>
 
           <label className="field">
-            <span>Ruolo operatore</span>
+            <span>Ruolo professionista</span>
             <input
               className="input"
               value={clinicianRole}
