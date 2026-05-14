@@ -451,8 +451,8 @@ def extract_rcp_section_47(text: str) -> str:
     compact = clean_document_text(text)
 
     patterns = [
-        r"4\s*[\.\)]\s*7\s+Effetti.*?(?=4\s*[\.\)]\s*8\s+|5\s*[\.\)]\s*1\s+|$)",
-        r"4\.7\s+Effetti.*?(?=4\.8\s+|5\.1\s+|$)",
+        r"4\s*[\.\)]\s*7\s*[\.]?\s+Effetti.*?(?=4\s*[\.\)]\s*8\s*[\.]?\s+|5\s*[\.\)]\s*1\s*[\.]?\s+|$)",
+        r"4\.7\s*[\.]?\s+Effetti.*?(?=4\.8\s*[\.]?\s+|5\.1\s*[\.]?\s+|$)",
     ]
 
     for pattern in patterns:
