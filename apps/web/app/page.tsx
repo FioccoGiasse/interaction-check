@@ -35,8 +35,18 @@ function getApiBaseUrl() {
 
   const origin = window.location.origin;
 
-  if (origin.includes("-3000.app.github.dev")) {
-    return origin.replace("-3000.app.github.dev", "-8000.app.github.dev");
+  const codespacesPortMatch = origin.match(/-\d+\.app\.github\.dev$/);
+
+  if (codespacesPortMatch) {
+    return origin.replace(/-\d+\.app\.github\.dev$/, "-8000.app.github.dev");
+  }
+
+  if (origin.includes(":3000")) {
+    return origin.replace(":3000", ":8000");
+  }
+
+  if (origin.includes(":3001")) {
+    return origin.replace(":3001", ":8000");
   }
 
   return "http://localhost:8000";
@@ -406,7 +416,7 @@ export default function Home() {
           </p>
 
 
-        <details className="section">
+        <details suppressHydrationWarning className="section">
           <summary>Fonti dati disponibili</summary>
           <div className="status">{sourcesStatus}</div>
 
@@ -452,7 +462,7 @@ export default function Home() {
             ))}
           </div>
 
-          <details className="selected-box">
+          <details suppressHydrationWarning className="selected-box">
             <summary>Fonti selezionate per la verifica</summary>
 
             {selectedSources.length === 0 ? (
@@ -694,7 +704,7 @@ export default function Home() {
         <div className="section">
             <h2>Interazioni alimentari, alcol e sostanze correlate</h2>
 
-            <details className="keyword-warning-box">
+            <details suppressHydrationWarning className="keyword-warning-box">
               <summary>ATTENZIONE: ricerca basata sulle parole chiave elencate sotto</summary>
 
               <p className="small">
@@ -1419,7 +1429,7 @@ export default function Home() {
 
         </div>
 
-        <details className="section">
+        <details suppressHydrationWarning className="section">
           <summary>Stato sistema</summary>
           <div className="status">{apiStatus}</div>
           <p className="small">
