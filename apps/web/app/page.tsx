@@ -1200,7 +1200,56 @@ export default function Home() {
         </div>
 
         <div className="section">
-          <h2>Fonti dati disponibili</h2>
+          
+            <div className="selected-box">
+              <h2>Preparazione report</h2>
+
+              <button
+                type="button"
+                className="primary-button"
+                onClick={prepareReportPayload}
+                disabled={selectedDrugs.length === 0}
+              >
+                Prepara dati report
+              </button>
+
+              {reportStatus && (
+                <div className="notice">
+                  {reportStatus}
+                </div>
+              )}
+
+              {reportPayload && (
+                <div>
+                  <p>Farmaci selezionati: {reportPayload.selected_drugs.length}</p>
+                  <p>Interazioni alimentari accettate: {reportPayload.accepted_food_interactions.length}</p>
+                  <p>Interazioni farmacologiche accettate: {reportPayload.accepted_drug_interactions.length}</p>
+                  <p>Sezioni 4.7 accettate: {reportPayload.accepted_driving_sections.length}</p>
+
+                  <div className="report-actions">
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => downloadReportPdf("patient")}
+                      disabled={!reportPayload.consent.complete || pdfLoading !== ""}
+                    >
+                      {pdfLoading === "patient" ? "Genero PDF..." : "Scarica copia paziente"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="primary-button"
+                      onClick={() => downloadReportPdf("clinician")}
+                      disabled={!reportPayload.consent.complete || pdfLoading !== ""}
+                    >
+                      {pdfLoading === "clinician" ? "Genero PDF..." : "Scarica copia medico"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <h2>Fonti dati disponibili</h2>
           <div className="status">{sourcesStatus}</div>
 
           <div className="sources-list">
