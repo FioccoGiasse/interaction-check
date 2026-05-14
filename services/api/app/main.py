@@ -267,12 +267,13 @@ def find_food_candidates_in_section(section_text: str, source_url: str) -> list[
     sentences = split_document_sentences(section_text)
 
     for sentence in sentences:
-        sentence_lower = sentence.lower()
+        normalized_sentence = normalize_text(sentence)
         matched_terms = []
 
         for term in FOOD_AND_SUPPLEMENT_TERMS:
-            pattern = r"\b" + re.escape(term.lower()) + r"\b"
-            if re.search(pattern, sentence_lower):
+            normalized_term = normalize_text(term)
+            pattern = r"\b" + re.escape(normalized_term) + r"\b"
+            if re.search(pattern, normalized_sentence):
                 matched_terms.append(term)
 
         if matched_terms:
