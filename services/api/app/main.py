@@ -771,6 +771,19 @@ def build_report_pdf(payload: dict, report_type: str) -> BytesIO:
     add_consent_section(story, consent, styles)
 
     selected_drugs = payload.get("selected_drugs", [])
+    additional_report_notes = payload.get("additional_report_notes", "")
+    clinical_notes = payload.get("clinical_notes", "")
+
+    if clinical_notes:
+        story.append(Paragraph("Note cliniche rilevanti", styles["Heading2"]))
+        add_pdf_paragraph(story, clinical_notes, styles["Normal"])
+        story.append(Spacer(1, 0.4 * cm))
+
+    if additional_report_notes:
+        story.append(Paragraph("Informazioni aggiuntive per il report", styles["Heading2"]))
+        add_pdf_paragraph(story, additional_report_notes, styles["Normal"])
+        story.append(Spacer(1, 0.4 * cm))
+
     story.append(Paragraph("Farmaci selezionati", styles["Heading2"]))
 
     if selected_drugs:

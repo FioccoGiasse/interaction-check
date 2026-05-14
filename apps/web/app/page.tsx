@@ -53,6 +53,7 @@ export default function Home() {
   const [clinicianName, setClinicianName] = useState("");
   const [clinicianRole, setClinicianRole] = useState("");
   const [clinicalNotes, setClinicalNotes] = useState("");
+  const [reportAdditionalNotes, setReportAdditionalNotes] = useState("");
   const [consentInformation, setConsentInformation] = useState(false);
   const [consentDataUse, setConsentDataUse] = useState(false);
   const [consentReportGeneration, setConsentReportGeneration] = useState(false);
@@ -325,6 +326,7 @@ export default function Home() {
         complete: consentComplete
       },
       clinical_notes: clinicalNotes,
+      additional_report_notes: reportAdditionalNotes,
       selected_sources: selectedSources,
       selected_drugs: selectedDrugs,
       accepted_food_interactions: acceptedFoodInteractions,
@@ -1322,6 +1324,22 @@ export default function Home() {
 
         <div className="section">
           
+          <div className="section">
+            <h2>Informazioni aggiuntive per il report</h2>
+
+            <p className="small">
+              Inserisci eventuali informazioni aggiuntive che devono comparire nel report. Non usare questo campo per generare nuove interpretazioni cliniche automatiche.
+            </p>
+
+            <textarea
+              className="textarea"
+              value={reportAdditionalNotes}
+              onChange={(event) => setReportAdditionalNotes(event.target.value)}
+              placeholder="Esempio: informazioni condivise durante la verifica, note contestuali, indicazioni già discusse con il paziente."
+              rows={5}
+            />
+          </div>
+
             <div className="selected-box">
               <h2>Preparazione report</h2>
 
