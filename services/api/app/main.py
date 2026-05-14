@@ -140,14 +140,14 @@ def extract_rcp_section_45(text: str) -> str:
     compact = clean_document_text(text)
 
     patterns = [
-        r"4\s*[\.\)]\s*5\s+Interazioni.*?(?=4\s*[\.\)]\s*6\s+|5\s*[\.\)]\s*1\s+|$)",
-        r"4\.5\s+Interazioni.*?(?=4\.6\s+|5\.1\s+|$)",
+        r"4\s*[\.\)]\s*5\s*[\.]?\s+Interazioni.*?(?=4\s*[\.\)]\s*6\s*[\.]?\s+|5\s*[\.\)]\s*1\s*[\.]?\s+|$)",
+        r"4\.5\s*[\.]?\s+Interazioni.*?(?=4\.6\s*[\.]?\s+|5\.1\s*[\.]?\s+|$)",
     ]
 
     for pattern in patterns:
         match = re.search(pattern, compact, flags=re.IGNORECASE | re.DOTALL)
         if match:
-            return clean_document_text(match.group(0))
+            return clean_aifa_pdf_noise(clean_document_text(match.group(0)))
 
     return ""
 
@@ -447,6 +447,19 @@ def search_drugs(q: str = Query(..., min_length=2), limit: int = Query(20, ge=1,
 
 
 
+def clean_aifa_pdf_noise(text: str) -> str:
+    text = re.sub(r"--- PAGE \d+ ---", "", text)
+    text = re.sub(r"Agenzia Italiana del Farmaco", "", text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"Documento reso disponibile da AIFA.*?\(o titolare AIC\)\.?",
+        "",
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def extract_rcp_section_47(text: str) -> str:
     compact = clean_document_text(text)
 
@@ -458,7 +471,7 @@ def extract_rcp_section_47(text: str) -> str:
     for pattern in patterns:
         match = re.search(pattern, compact, flags=re.IGNORECASE | re.DOTALL)
         if match:
-            return clean_document_text(match.group(0))
+            return clean_aifa_pdf_noise(clean_document_text(match.group(0)))
 
     return ""
 
