@@ -690,10 +690,10 @@ export default function Home() {
         </div>
 
         <div className="section">
-          <h2>Interazioni alimentari suggerite</h2>
+          <h2>Interazioni alimentari</h2>
 
           <p className="small">
-            Il sistema proporrà automaticamente le interazioni alimentari trovate nelle fonti selezionate, in base ai farmaci aggiunti al report.
+            Il sistema legge le fonti selezionate e mostra i candidati documentali relativi a possibili interazioni tra farmaci e alimenti.
           </p>
 
           {selectedDrugs.length === 0 ? (
@@ -702,7 +702,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="notice">
-              Farmaci selezionati: {selectedDrugs.length}. Nessuna interazione alimentare strutturata disponibile nelle fonti configurate.
+              Farmaci selezionati: {selectedDrugs.length}. Puoi avviare la verifica delle possibili interazioni alimentari.
             </div>
           )}
 
@@ -878,14 +878,14 @@ export default function Home() {
             </p>
 
             {selectedDrugs.length === 0 && (
-              <div className="warning-box">
+              <div className="warning">
                 Seleziona almeno un farmaco per cercare interazioni con altri farmaci.
               </div>
             )}
 
             <button
               type="button"
-              className="primary-button"
+              className="button"
               onClick={checkSuggestedDrugInteractions}
               disabled={selectedDrugs.length === 0 || drugInteractionLoading}
             >
@@ -1095,14 +1095,14 @@ export default function Home() {
             </p>
 
             {selectedDrugs.length === 0 && (
-              <div className="warning-box">
+              <div className="warning">
                 Seleziona almeno un farmaco per recuperare la sezione 4.7.
               </div>
             )}
 
             <button
               type="button"
-              className="primary-button"
+              className="button"
               onClick={checkDrivingSection}
               disabled={selectedDrugs.length === 0 || drivingSectionLoading}
             >
@@ -1327,7 +1327,7 @@ export default function Home() {
 
               <button
                 type="button"
-                className="primary-button"
+                className="button"
                 onClick={prepareReportPayload}
                 disabled={selectedDrugs.length === 0}
               >
@@ -1350,7 +1350,7 @@ export default function Home() {
                   <div className="report-actions">
                     <button
                       type="button"
-                      className="primary-button"
+                      className="button"
                       onClick={() => downloadReportPdf("patient")}
                       disabled={!reportPayload.consent.complete || pdfLoading !== ""}
                     >
@@ -1359,7 +1359,7 @@ export default function Home() {
 
                     <button
                       type="button"
-                      className="primary-button"
+                      className="button"
                       onClick={() => downloadReportPdf("clinician")}
                       disabled={!reportPayload.consent.complete || pdfLoading !== ""}
                     >
