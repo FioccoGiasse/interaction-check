@@ -393,13 +393,15 @@ export default function Home() {
   return (
     <main className="container">
       <div className="card">
-        <div className="logo">ENIA Interaction Check</div>
+          <div className="logo">Verifica Interazioni Farmaci e Alimenti</div>
 
-        <p className="subtitle">
-          Piattaforma italiana per supportare la verifica informativa di possibili
-          interazioni tra farmaci, alimenti e integratori, usando fonti tracciabili
-          e senza generare contenuti clinici non verificati.
-        </p>
+          <p className="subtitle">
+            <strong>Prototipo V1.</strong> Strumento prototipale per supportare la verifica informativa di possibili interazioni alimentari, interazioni con altri farmaci ed effetti su guida e uso di macchinari secondo la sezione 4.7 del RCP, usando fonti tracciabili e contenuti selezionati dal medico prima della generazione del report.
+          </p>
+
+          <p className="small">
+            Passaggi: seleziona le fonti dati, cerca e aggiungi i farmaci del paziente, verifica le possibili interazioni e la sezione 4.7 del RCP, accetta o escludi gli elementi da includere, registra il consenso e genera la copia paziente e la copia medico.
+          </p>
 
         <div className="section">
           <h2>Stato sistema</h2>
