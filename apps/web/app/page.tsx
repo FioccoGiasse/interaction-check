@@ -404,6 +404,69 @@ export default function Home() {
           </p>
 
 
+        <details className="section">
+          <summary>Fonti dati disponibili</summary>
+          <div className="status">{sourcesStatus}</div>
+
+          <div className="sources-list">
+            {sources.map((source) => (
+              <label
+                key={source.id}
+                className={source.enabled ? "source-card" : "source-card disabled"}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedSources.includes(source.id)}
+                  disabled={!source.enabled}
+                  onChange={() => toggleSource(source.id)}
+                />
+
+                <div>
+                  <div className="source-title">{source.name}</div>
+
+                  <div className="source-description">
+                    {source.description}
+                  </div>
+
+                  <div className="badges">
+                    <span className="badge">{source.source_type}</span>
+
+                    <span className={source.enabled ? "badge green" : "badge red"}>
+                      {source.enabled ? "attiva" : "non attiva"}
+                    </span>
+
+                    <span className={source.configured ? "badge green" : "badge amber"}>
+                      {source.configured ? "configurata" : "da configurare"}
+                    </span>
+
+                    {source.clinical_interaction_source && (
+                      <span className="badge blue">
+                        fonte interazioni cliniche
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          <details className="selected-box">
+            <summary>Fonti selezionate per la verifica</summary>
+
+            {selectedSources.length === 0 ? (
+              <p>Nessuna fonte selezionata.</p>
+            ) : (
+              <ul>
+                {selectedSources.map((sourceId) => {
+                  const source = sources.find((item) => item.id === sourceId);
+
+                  return <li key={sourceId}>{source?.name || sourceId}</li>;
+                })}
+              </ul>
+            )}
+          </details>
+        </details>
+
         <div className="section">
           <h2>Flusso medico</h2>
           <p className="small">
@@ -1242,66 +1305,6 @@ export default function Home() {
               )}
             </div>
 
-            <h2>Fonti dati disponibili</h2>
-          <div className="status">{sourcesStatus}</div>
-
-          <div className="sources-list">
-            {sources.map((source) => (
-              <label
-                key={source.id}
-                className={source.enabled ? "source-card" : "source-card disabled"}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedSources.includes(source.id)}
-                  disabled={!source.enabled}
-                  onChange={() => toggleSource(source.id)}
-                />
-
-                <div>
-                  <div className="source-title">{source.name}</div>
-
-                  <div className="source-description">
-                    {source.description}
-                  </div>
-
-                  <div className="badges">
-                    <span className="badge">{source.source_type}</span>
-
-                    <span className={source.enabled ? "badge green" : "badge red"}>
-                      {source.enabled ? "attiva" : "non attiva"}
-                    </span>
-
-                    <span className={source.configured ? "badge green" : "badge amber"}>
-                      {source.configured ? "configurata" : "da configurare"}
-                    </span>
-
-                    {source.clinical_interaction_source && (
-                      <span className="badge blue">
-                        fonte interazioni cliniche
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </label>
-            ))}
-          </div>
-
-          <div className="selected-box">
-            <h3>Fonti selezionate per la verifica</h3>
-
-            {selectedSources.length === 0 ? (
-              <p>Nessuna fonte selezionata.</p>
-            ) : (
-              <ul>
-                {selectedSources.map((sourceId) => {
-                  const source = sources.find((item) => item.id === sourceId);
-
-                  return <li key={sourceId}>{source?.name || sourceId}</li>;
-                })}
-              </ul>
-            )}
-          </div>
         </div>
 
         <div className="section">
